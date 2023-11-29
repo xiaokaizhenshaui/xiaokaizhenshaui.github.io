@@ -1,0 +1,222 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>四大算法--动态规划 | Cerulean Deer</title><meta name="author" content="youngCerulean"><meta name="copyright" content="youngCerulean"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="四大算法–动态规划（Dynamic Programming）核心Those who cannot remember the past are condemned to repeat it.  吃一堑长一智  动态规划算法的两种形式①自顶向下的备忘录法  Fibonacci数列 1234def fib"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2021/03/13/Dynamic%20Programming/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '四大算法--动态规划',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-03-26 13:55:47'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.0.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://inews.gtimg.com/newsapp_bt/0/12993593928/641" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">9</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw iconfont icon-shouyex"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw iconfont icon-fenlei1"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw iconfont icon-biaoqian1"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw iconfont icon-shijianzhou"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw iconfont icon-shenghuo"></i><span> 清单</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/messageboard/"><i class="fa-fw iconfont icon-liaotian-04"></i><span> 留言板</span></a></li><li><a class="site-page child" href="/link/"><i class="fa-fw iconfont icon-lianjie"></i><span> 友人帐</span></a></li><li><a class="site-page child" href="/share/"><i class="fa-fw iconfont icon-fenxiang"></i><span> 分享</span></a></li><li><a class="site-page child" href="/gallery/"><i class="fa-fw iconfont icon-xiangce"></i><span> 相册</span></a></li><li><a class="site-page child" href="/books/"><i class="fa-fw iconfont icon-shuji"></i><span> 书籍</span></a></li><li><a class="site-page child" href="/FilmAndTV/"><i class="fa-fw iconfont icon-yingshi1"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw iconfont icon-gerenzhongxin"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://i.loli.net/2021/01/06/1P5hM9NQVynfwIG.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="Cerulean Deer"><span class="site-name">Cerulean Deer</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw iconfont icon-shouyex"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw iconfont icon-fenlei1"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw iconfont icon-biaoqian1"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw iconfont icon-shijianzhou"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw iconfont icon-shenghuo"></i><span> 清单</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/messageboard/"><i class="fa-fw iconfont icon-liaotian-04"></i><span> 留言板</span></a></li><li><a class="site-page child" href="/link/"><i class="fa-fw iconfont icon-lianjie"></i><span> 友人帐</span></a></li><li><a class="site-page child" href="/share/"><i class="fa-fw iconfont icon-fenxiang"></i><span> 分享</span></a></li><li><a class="site-page child" href="/gallery/"><i class="fa-fw iconfont icon-xiangce"></i><span> 相册</span></a></li><li><a class="site-page child" href="/books/"><i class="fa-fw iconfont icon-shuji"></i><span> 书籍</span></a></li><li><a class="site-page child" href="/FilmAndTV/"><i class="fa-fw iconfont icon-yingshi1"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw iconfont icon-gerenzhongxin"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">四大算法--动态规划</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-03-13T02:12:25.000Z" title="发表于 2021-03-13 10:12:25">2021-03-13</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-03-26T05:55:47.511Z" title="更新于 2021-03-26 13:55:47">2021-03-26</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="四大算法--动态规划"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="四大算法–动态规划（Dynamic-Programming）"><a href="#四大算法–动态规划（Dynamic-Programming）" class="headerlink" title="四大算法–动态规划（Dynamic Programming）"></a>四大算法–动态规划（Dynamic Programming）</h1><h2 id="核心"><a href="#核心" class="headerlink" title="核心"></a>核心</h2><center style='color:skyblue;font-style:italic;'>Those who cannot remember the past are condemned to repeat it.</center>
+
+<center style='color:red;font-style:italic;'>吃一堑长一智</center>
+
+<h2 id="动态规划算法的两种形式"><a href="#动态规划算法的两种形式" class="headerlink" title="动态规划算法的两种形式"></a>动态规划算法的两种形式</h2><p>①<strong>自顶向下的备忘录法</strong></p>
+<blockquote>
+<p>Fibonacci数列</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">fib</span>(<span class="params">n</span>):</span><br><span class="line"> <span class="keyword">if</span>(n &lt;= <span class="number">1</span>): </span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line"> <span class="keyword">return</span> fib(n-<span class="number">1</span>)+fib(n-<span class="number">2</span>)</span><br></pre></td></tr></table></figure>
+
+<p>采用的每层进行计算叠加</p>
+<p>而当我们换用动态规划，每次计算的结果载入<code>备忘录(Memo)</code>中，当时用的时候直接使用。</p>
+<p>但是这种方式额外产生了开销，这些开销是多次计算的不必要开销。</p>
+</blockquote>
+<p>②<strong>自底向上</strong></p>
+<blockquote>
+<p>自顶而下的方法，其实令很多内存空间多次使用，观察参与循环的只有n，n-1，n-2三项。</p>
+<p>因此，我们可以自下而上计算，这样可以加快计算效率</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">fib</span>(<span class="params">n</span>):</span><br><span class="line">    <span class="keyword">if</span>(n&lt;=<span class="number">1</span>): </span><br><span class="line">        <span class="built_in">print</span>(<span class="number">1</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="number">1</span>)</span><br><span class="line">    sub1,sub2,i = <span class="number">0</span>,<span class="number">1</span>,<span class="number">0</span></span><br><span class="line">    <span class="keyword">while</span> i&lt;n-<span class="number">1</span>:</span><br><span class="line">        <span class="built_in">print</span>(sub2+sub1)</span><br><span class="line">        sub2,sub1=sub1+sub2,sub2</span><br><span class="line">        i+=<span class="number">1</span></span><br></pre></td></tr></table></figure>
+</blockquote>
+<h2 id="动态规划原理"><a href="#动态规划原理" class="headerlink" title="动态规划原理"></a>动态规划原理</h2><p>通过算法导论的例子，我们可以看出这类问题都涉及到重叠子问题，和最优子结构。</p>
+<p><strong>①最优子结构</strong></p>
+<p>​    我们观测一个问题的解结构包含其子问题的最优解，是否具有最优子结构性质，必须考察最优解用到的所有子问题。</p>
+<p><strong>②重叠子问题</strong></p>
+<p>​    斐波那契数列中，可以看到大量的重叠子问题，尤其是自顶而下的算法，反复求解，造成数据量计算的冗余。这时，Memo是一个不错的选择。</p>
+<h2 id="动态规划中的经典模型"><a href="#动态规划中的经典模型" class="headerlink" title="动态规划中的经典模型"></a>动态规划中的经典模型</h2><h3 id="线性模型"><a href="#线性模型" class="headerlink" title="线性模型"></a>线性模型</h3><p>​    花和尚喝酒问题，过河问题，都可以用上动态规划思想。</p>
+<blockquote>
+<p><strong>花和尚喝酒：50里地，每走一里便要喝一坛酒，100坛酒能带回几坛</strong></p>
+<p>50-100/3≈16，故应该为17坛。</p>
+<p>假设路程是一来回再加上去的路程，那么我们可以计算出，每段路程消耗33坛酒，则容易算出，每段路程有16坛酒无法满足。</p>
+<p>如果每段路走超过33.3里，就会导致酒喝光，无法步行。</p>
+<p>我们取16里路，则会剩下52坛酒，再加上最开始100/3省掉的一坛酒，就是证明最后还可以有17坛酒</p>
+</blockquote>
+<p>在这里，我们的思维是抽象成线的。在数轴上多次计算。也可以用二分法不断得出结论。25不剩下酒，20能剩下10坛，15能剩下15坛，可以画出一个逼近曲线，必然存在一个保持平衡的点，使得50-x=x</p>
+<h3 id="区间模型"><a href="#区间模型" class="headerlink" title="区间模型"></a>区间模型</h3><p>区间模型的状态表示一般为d[i][j]，表示区间[i, j]上的最优解，然后通过状态转移计算出[i+1, j]或者[i, j+1]上的最优解，逐步扩大区间的范围，最终求得[1, len]的最优解</p>
+<blockquote>
+<p><strong>给定一个长度为n（n &lt;= 1000）的字符串A，求插入最少多少个字符使得它变成一个回文串</strong></p>
+<ol>
+<li>在A[i]前面添加一个字符A[j]</li>
+<li>在A[j]后面添加一个字符A[i]</li>
+</ol>
+<p>得到状态转移方程：<br>$$<br>d[ i ] [ j ] = min {d[ i+1 ][j],d[i][j+1]}+1<br>$$</p>
+<p>空间复杂度为O(n^2),时间复杂度为O(n^2)</p>
+</blockquote>
+<h3 id="背包模型"><a href="#背包模型" class="headerlink" title="背包模型"></a>背包模型</h3><blockquote>
+<p><strong>有N种物品（每种物品1件）和一个容量为V的背包。放入第 i 种物品耗费的空间是Ci，得到的价值是Wi。求解将哪些物品装入背包可使价值总和最大。</strong></p>
+<ol>
+<li>*f[i ，v]*表示前i种物品恰好放入一个容量为v的背包可以获得的最大价值。</li>
+<li>决策为第i个物品在前i-1个物品放置完毕后，选择放还是不放</li>
+</ol>
+<p>状态转移方程为：<br>$$<br>f[ i ] [v] = min {f[ i-1 ][v],f[i-1][v-Ci]+Wi}<br>$$</p>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://example.com">youngCerulean</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2021/03/13/Dynamic%20Programming/">http://example.com/2021/03/13/Dynamic%20Programming/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">Cerulean Deer</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Dynamic-Programming/">Dynamic Programming</a></div><div class="post_share"><div class="social-share" data-image="https://kafka.apachecn.org/images/logo.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2021/03/23/%E7%BA%BF%E7%A8%8B%E6%B1%A0%E4%B8%8E%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%8F%96%E8%88%8D/" title="多线程，线程池"><img class="cover" src="https://i.loli.net/2021/01/06/c5h23kGVUq7YMx6.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">多线程，线程池</div></div></a></div><div class="next-post pull-right"><a href="/2021/01/28/%E5%A4%A7%E6%95%B0%E6%8D%AE%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/" title="大数据入门学习(一)"><img class="cover" src="http://www.cbdio.com/classicon/jpg/site2/20141121/1416557569281.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">大数据入门学习(一)</div></div></a></div></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://inews.gtimg.com/newsapp_bt/0/12993593928/641" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">youngCerulean</div><div class="author-info__description">THE GOOD DAY START FROM THERE</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">9</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/xiaokaizhenshaui" target="_blank" title="GitHub"><i class="fab fa-github"></i></a><a class="social-icon" href="/1328033780" target="_blank" title="QQ"><i class="fab fa-qq"></i></a><a class="social-icon" href="https://blog.csdn.net/Youth_lql" target="_blank" title="我的CSDN"><i class="fa fa-address-card"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">悬赏栏</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E5%A4%A7%E7%AE%97%E6%B3%95%E2%80%93%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92%EF%BC%88Dynamic-Programming%EF%BC%89"><span class="toc-number">1.</span> <span class="toc-text">四大算法–动态规划（Dynamic Programming）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83"><span class="toc-number">1.1.</span> <span class="toc-text">核心</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92%E7%AE%97%E6%B3%95%E7%9A%84%E4%B8%A4%E7%A7%8D%E5%BD%A2%E5%BC%8F"><span class="toc-number">1.2.</span> <span class="toc-text">动态规划算法的两种形式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92%E5%8E%9F%E7%90%86"><span class="toc-number">1.3.</span> <span class="toc-text">动态规划原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92%E4%B8%AD%E7%9A%84%E7%BB%8F%E5%85%B8%E6%A8%A1%E5%9E%8B"><span class="toc-number">1.4.</span> <span class="toc-text">动态规划中的经典模型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BA%BF%E6%80%A7%E6%A8%A1%E5%9E%8B"><span class="toc-number">1.4.1.</span> <span class="toc-text">线性模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8C%BA%E9%97%B4%E6%A8%A1%E5%9E%8B"><span class="toc-number">1.4.2.</span> <span class="toc-text">区间模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%83%8C%E5%8C%85%E6%A8%A1%E5%9E%8B"><span class="toc-number">1.4.3.</span> <span class="toc-text">背包模型</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/03/10/Kafka%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0(%E4%B8%80)/Kafkawindow%E7%8E%AF%E5%A2%83%E9%80%82%E9%85%8D/" title="无题"><img src="https://i.loli.net/2021/01/06/c5h23kGVUq7YMx6.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="无题"/></a><div class="content"><a class="title" href="/2022/03/10/Kafka%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0(%E4%B8%80)/Kafkawindow%E7%8E%AF%E5%A2%83%E9%80%82%E9%85%8D/" title="无题">无题</a><time datetime="2022-03-10T08:48:56.598Z" title="发表于 2022-03-10 16:48:56">2022-03-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/17/JDK8-JDK17%E4%B8%AA%E7%89%88%E6%9C%AC%E9%87%8D%E8%A6%81%E7%89%B9%E6%80%A7/" title="无题"><img src="https://i.loli.net/2021/01/06/c5h23kGVUq7YMx6.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="无题"/></a><div class="content"><a class="title" href="/2022/01/17/JDK8-JDK17%E4%B8%AA%E7%89%88%E6%9C%AC%E9%87%8D%E8%A6%81%E7%89%B9%E6%80%A7/" title="无题">无题</a><time datetime="2022-01-17T08:49:42.571Z" title="发表于 2022-01-17 16:49:42">2022-01-17</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/17/ElasticSearch%E5%AD%A6%E4%B9%A0%E6%89%8B%E5%86%8C/" title="ElasticSearch学习手册"><img src="https://i.loli.net/2021/01/06/c5h23kGVUq7YMx6.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="ElasticSearch学习手册"/></a><div class="content"><a class="title" href="/2022/01/17/ElasticSearch%E5%AD%A6%E4%B9%A0%E6%89%8B%E5%86%8C/" title="ElasticSearch学习手册">ElasticSearch学习手册</a><time datetime="2022-01-17T06:01:40.679Z" title="发表于 2022-01-17 14:01:40">2022-01-17</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/03/24/SpringStream%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B%E5%AD%A6%E4%B9%A0(%E6%9B%B4%E6%96%B0%E4%B8%AD%EF%BC%89/" title="SpringStream入门教程学习"><img src="https://i.loli.net/2021/01/06/c5h23kGVUq7YMx6.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="SpringStream入门教程学习"/></a><div class="content"><a class="title" href="/2021/03/24/SpringStream%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B%E5%AD%A6%E4%B9%A0(%E6%9B%B4%E6%96%B0%E4%B8%AD%EF%BC%89/" title="SpringStream入门教程学习">SpringStream入门教程学习</a><time datetime="2021-03-24T02:12:25.000Z" title="发表于 2021-03-24 10:12:25">2021-03-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/03/23/%E7%BA%BF%E7%A8%8B%E6%B1%A0%E4%B8%8E%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%8F%96%E8%88%8D/" title="多线程，线程池"><img src="https://i.loli.net/2021/01/06/c5h23kGVUq7YMx6.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="多线程，线程池"/></a><div class="content"><a class="title" href="/2021/03/23/%E7%BA%BF%E7%A8%8B%E6%B1%A0%E4%B8%8E%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%8F%96%E8%88%8D/" title="多线程，线程池">多线程，线程池</a><time datetime="2021-03-23T02:12:25.000Z" title="发表于 2021-03-23 10:12:25">2021-03-23</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('https://i.loli.net/2021/01/06/1P5hM9NQVynfwIG.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2023 By youngCerulean</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>(() => {
+  const initValine = () => {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: '',
+      appKey: '',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  const loadValine = async () => {
+    if (typeof Valine === 'function') initValine()
+    else {
+      await getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js')
+      initValine()
+    }
+  }
+
+  if ('Valine' === 'Valine' || !true) {
+    if (true) btf.loadComment(document.getElementById('vcomment'),loadValine)
+    else setTimeout(loadValine, 0)
+  } else {
+    window.loadOtherComment = loadValine
+  }
+})()</script></div><link rel="stylesheet" href="http://localhost:4000/css/xiao.css"><script data-pjax src="http://localhost:4000/js/xiao.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>

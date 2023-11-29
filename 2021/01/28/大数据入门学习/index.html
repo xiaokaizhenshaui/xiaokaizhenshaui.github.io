@@ -1,0 +1,389 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>大数据入门学习(一) | Cerulean Deer</title><meta name="author" content="youngCerulean"><meta name="copyright" content="youngCerulean"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="大数据入门学习  大数据概念大数据（BIG DATA）是指无法在一定时间范围内用常规软件工具进行捕捉、管理和处理的数据集合，是需要新处理模式才能具有更强的决策力、洞察发现力和流程优化能力的海量、高增长率和多样化的信息资产。 大数据特点（5V）：  VOLUME（大量） VELOCITY（高速） VA"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2021/01/28/%E5%A4%A7%E6%95%B0%E6%8D%AE%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '大数据入门学习(一)',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-03-26 13:56:13'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.0.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://inews.gtimg.com/newsapp_bt/0/12993593928/641" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">9</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw iconfont icon-shouyex"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw iconfont icon-fenlei1"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw iconfont icon-biaoqian1"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw iconfont icon-shijianzhou"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw iconfont icon-shenghuo"></i><span> 清单</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/messageboard/"><i class="fa-fw iconfont icon-liaotian-04"></i><span> 留言板</span></a></li><li><a class="site-page child" href="/link/"><i class="fa-fw iconfont icon-lianjie"></i><span> 友人帐</span></a></li><li><a class="site-page child" href="/share/"><i class="fa-fw iconfont icon-fenxiang"></i><span> 分享</span></a></li><li><a class="site-page child" href="/gallery/"><i class="fa-fw iconfont icon-xiangce"></i><span> 相册</span></a></li><li><a class="site-page child" href="/books/"><i class="fa-fw iconfont icon-shuji"></i><span> 书籍</span></a></li><li><a class="site-page child" href="/FilmAndTV/"><i class="fa-fw iconfont icon-yingshi1"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw iconfont icon-gerenzhongxin"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://i.loli.net/2021/01/06/1P5hM9NQVynfwIG.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="Cerulean Deer"><span class="site-name">Cerulean Deer</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw iconfont icon-shouyex"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw iconfont icon-fenlei1"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw iconfont icon-biaoqian1"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw iconfont icon-shijianzhou"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw iconfont icon-shenghuo"></i><span> 清单</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/messageboard/"><i class="fa-fw iconfont icon-liaotian-04"></i><span> 留言板</span></a></li><li><a class="site-page child" href="/link/"><i class="fa-fw iconfont icon-lianjie"></i><span> 友人帐</span></a></li><li><a class="site-page child" href="/share/"><i class="fa-fw iconfont icon-fenxiang"></i><span> 分享</span></a></li><li><a class="site-page child" href="/gallery/"><i class="fa-fw iconfont icon-xiangce"></i><span> 相册</span></a></li><li><a class="site-page child" href="/books/"><i class="fa-fw iconfont icon-shuji"></i><span> 书籍</span></a></li><li><a class="site-page child" href="/FilmAndTV/"><i class="fa-fw iconfont icon-yingshi1"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw iconfont icon-gerenzhongxin"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">大数据入门学习(一)</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-01-28T02:12:25.000Z" title="发表于 2021-01-28 10:12:25">2021-01-28</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-03-26T05:56:13.449Z" title="更新于 2021-03-26 13:56:13">2021-03-26</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="大数据入门学习(一)"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 align="center" style="color:skyblue">大数据入门学习</h1>
+
+<h2 id="大数据概念"><a href="#大数据概念" class="headerlink" title="大数据概念"></a>大数据概念</h2><p>大数据（BIG DATA）是指无法在一定时间范围内用常规软件工具进行捕捉、管理和处理的数据集合，是需要新处理模式才能具有更强的决策力、洞察发现力和流程优化能力的海量、高增长率和多样化的信息资产。</p>
+<h2 id="大数据特点（5V）："><a href="#大数据特点（5V）：" class="headerlink" title="大数据特点（5V）："></a>大数据特点（5V）：</h2><blockquote>
+<ul>
+<li>VOLUME（大量）</li>
+<li>VELOCITY（高速）</li>
+<li>VARIETY（多样）</li>
+<li>VALUE（低价值密度）</li>
+<li>VERACITY（真实性）</li>
+</ul>
+</blockquote>
+<h2 id="大数据学习历程："><a href="#大数据学习历程：" class="headerlink" title="大数据学习历程："></a>大数据学习历程：</h2><p><img src="https://pic2.zhimg.com/v2-b0a0cd2f6b5756474267a2090aecaabd_r.jpg" alt="preview"></p>
+<p>Linux -&gt; Hadoop -&gt; Zookeeper -&gt; Hive -&gt; Flume -&gt; Kafka -&gt; HBase -&gt; Scala -&gt;（Storm）-&gt; Spark -&gt; 项目 - &gt; Flink</p>
+<h4 id="Java语言的学习"><a href="#Java语言的学习" class="headerlink" title="Java语言的学习"></a>Java语言的学习</h4><blockquote>
+<p>AOP，IOC，高并发，JVM</p>
+</blockquote>
+<h4 id="Linux系统-amp-Hadoop生态系统"><a href="#Linux系统-amp-Hadoop生态系统" class="headerlink" title="Linux系统&amp;Hadoop生态系统"></a>Linux系统&amp;Hadoop生态系统</h4><h6 id="Linux入门"><a href="#Linux入门" class="headerlink" title="Linux入门"></a>Linux入门</h6><blockquote>
+<p> <a target="_blank" rel="noopener" href="https://www.bilibili.com/video/av21303002?p=9">含shell</a>，<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/av68267149?p=5">不含shell</a></p>
+<ol>
+<li>常用基本命令</li>
+<li>系统管理</li>
+<li>Linux操作增强</li>
+<li>Linux shell编程</li>
+</ol>
+</blockquote>
+<h6 id="Hadoop生态（-）"><a href="#Hadoop生态（-）" class="headerlink" title="Hadoop生态（**）"></a>Hadoop生态（**）</h6><blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/av32081351?p=1">尚硅谷系列Hadoop</a>,<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/av64039568?from=search&seid=1820891664356324892">尚硅谷系列2019</a></p>
+<p>Hadoop是一个分布式系统基础框架，用于主要解决海量数据的存储和海量数据的分析计算问题，也可以说Hadoop是后续整个集群环境的基础，很多框架的使用都是会依赖于Hadoop。主要是由HDFS、MapReduce、YARN组成。这个部分安装Hadoop，Hadoop的三个主要组成部分是重点，对他们的概念要理解出来，知道他们是做什么的，搭建集群环境，伪分布式模式和完全分布式模式的搭建，重要的是完全分布式的搭建，这些部分一定要自己动手实践，自己搭建集群，仔细仔细再仔细，Hadoop的NameNode，DataNode，YARN的启动关闭命令一定要知道，以及他们的启动关闭顺序要记住，不要搞混。</p>
+<ol>
+<li>分布式系统概述</li>
+<li>Hadoop入门</li>
+<li>Hadoop伪分布式</li>
+<li>Hadoop全分布式</li>
+<li>HDFS基本概念</li>
+<li>HDFS的应用开发</li>
+<li>HDFS的IO流操作</li>
+<li>NameNode工作机制</li>
+<li>DataNode工作机制</li>
+</ol>
+</blockquote>
+<h6 id="Zookeeper入门"><a href="#Zookeeper入门" class="headerlink" title="Zookeeper入门"></a>Zookeeper入门</h6><blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/av53962808?from=search&seid=14867728339471861924">zookeeper</a>，<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/av32093417?from=search&seid=14867728339471861924">2019</a></p>
+<ol>
+<li>Zookeeper详解</li>
+<li>HA框架原理</li>
+<li>Hadoop-HA集群配置</li>
+<li>MapReduce框架原理</li>
+<li>Shuffle机制</li>
+<li>Mapreduce案例一</li>
+<li>Mapreduce案例二</li>
+</ol>
+</blockquote>
+<h6 id="Hive入门（-）"><a href="#Hive入门（-）" class="headerlink" title="Hive入门（*）"></a>Hive入门（*）</h6><blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/av76061713?from=search&seid=6080018633047350271">Hive</a>，<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/av32097088?from=search&seid=14922409626561581253">Hive2</a>，<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/av65556024?from=search&seid=14922409626561581253">Hive2019</a></p>
+<p>Hive是基于Hadoop的数据仓库工具，可以将结构化的数据文件映射为一张表，并提供类SQL查询功能。Hive的安装，它的数据类型，以及它的数据定义、数据操作有较好的了解，怎么操作表（创建表、删除表，创建什么类型的表，他们有什么不同），怎么操作数据（加载数据，下载数据，对不同的表进行数据操作），对数据的查询一定要进行实践操作，以及对压缩方式和存储格式要有一些了解</p>
+<ol>
+<li>Hive DDL数据定义</li>
+<li>Hive分区表</li>
+<li>Hive分桶表</li>
+<li>Hive查询</li>
+<li>Hive的高级查询Join与排序</li>
+<li>Hive的函数</li>
+<li>Hive DML数据管理</li>
+<li>Hive文件存储</li>
+<li>Hive企业级调优</li>
+<li>Hive企业级调优二</li>
+<li>Hive企业级项目实战</li>
+</ol>
+</blockquote>
+<h6 id="Flume详解"><a href="#Flume详解" class="headerlink" title="Flume详解"></a>Flume详解</h6><blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/av66126320?from=search&seid=4743678003250939296">Flume</a>,<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/av68376629?from=search&seid=15081053946655972416">Flume2</a>,<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/av65541678?from=search&seid=13455141829682550307">Flume2019</a></p>
+<p>Flume是一个高可用的，高可靠的，分布式的海量日志采集、聚合和传输的系统。对于Flume，对它的组成架构，以及对Flume Agent的内部原理要理解清楚，Source、Channel、Sink一定要知道它们的各种类型以及作用，有哪些拓扑结构是常见常用的，例如一对一，单Source、多Channel、多Sink等,对Flume的配置文件一定要了解清楚</p>
+<ol>
+<li>Sqoop详解</li>
+</ol>
+</blockquote>
+<h6 id="Hbase"><a href="#Hbase" class="headerlink" title="Hbase(*)"></a>Hbase(*)</h6><blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/av35356127?from=search&seid=759279005217475156">HBase</a>,<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/av65548392?from=search&seid=759279005217475156">HBase2019</a></p>
+<p>HBase是一个分布式的、基于列存储的开源数据库。HBase适合存储PB级别的海量数据，也可以说HBase是很适合大数据的存储的，它是基于列式存储数据的，列族下面可以有非常多的列，列族在创建表的时候就必须指定。所以对HBase的数据结构要有一定的理解，特别是RowKey的设计部分</p>
+<ol>
+<li>Hbase的操作</li>
+<li>Hbase整合</li>
+<li>Hbase的实战和优化</li>
+</ol>
+</blockquote>
+<h6 id="Kafka"><a href="#Kafka" class="headerlink" title="Kafka(*)"></a>Kafka(*)</h6><blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/av49920938?from=search&seid=12535568434906893507">Kafka</a>,<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/av65544753?from=search&seid=12535568434906893507">Kafka2019</a></p>
+<p>Kafka是一个分布式消息队列，用来缓存数据的。比如说实时计算中可以通过Flume+Kafka对数据进行采集处理之后，Spark Streaming再使用Kafka相应的Topic中的数据，用于后续的计算使用。对于Kafka，要理解Kafka的架构，什么是Kafka，为什么需要Kafka，应用场景。基本的命令行操作要掌握，比如怎么创建删除Topic，怎么通过生产者生成数据，消费者怎么消费数据等基本操作</p>
+</blockquote>
+<h4 id="分布式计算框架"><a href="#分布式计算框架" class="headerlink" title="分布式计算框架"></a>分布式计算框架</h4><blockquote>
+<ol>
+<li><p>scala</p>
+<blockquote>
+<p>Scala主要重点包括：<strong>隐式转换和隐式参数、模式匹配、函数式编程</strong>。</p>
+<p>推荐<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV11A411L7CK?from=search&seid=4249061453475483212">韩顺平</a></p>
+</blockquote>
+</li>
+<li><p>Spark Core</p>
+<blockquote>
+<p>大数据架构体系</p>
+<p>架构详解</p>
+<p>Spark集群介绍</p>
+<p>Spark集群配置</p>
+</blockquote>
+</li>
+<li><p>Spark SQL</p>
+</li>
+<li><p>Spark Streaming</p>
+</li>
+<li><p>kafka</p>
+</li>
+<li><p>ElasticSearch，Kibana，Logstash</p>
+</li>
+<li><p>Redis</p>
+</li>
+</ol>
+</blockquote>
+<h4 id="大数据分析"><a href="#大数据分析" class="headerlink" title="大数据分析"></a>大数据分析</h4><blockquote>
+<ol>
+<li><p>Data Analyze数据分析基础</p>
+</li>
+<li><p>工作环境准备</p>
+</li>
+<li><p>数据可视化概念</p>
+</li>
+<li><p>Python机器学习</p>
+</li>
+<li><p>选择模型</p>
+</li>
+<li><p>构建树的过程</p>
+<blockquote>
+<ul>
+<li>sklearn中决策树重要的参数</li>
+<li>特征重要性得分</li>
+</ul>
+</blockquote>
+</li>
+<li><p>网格搜索</p>
+<blockquote>
+<ul>
+<li>10折交叉验证</li>
+<li>模型评价指标以及模型选择</li>
+</ul>
+</blockquote>
+</li>
+<li><p>sklearn中三类朴素贝叶斯算法</p>
+<blockquote>
+<ul>
+<li><p>Bernoulli模型</p>
+</li>
+<li><p>Multinomial模型</p>
+</li>
+</ul>
+</blockquote>
+</li>
+<li><p>颜色特征</p>
+</li>
+</ol>
+</blockquote>
+<h4 id="机器学习算法资料"><a href="#机器学习算法资料" class="headerlink" title="机器学习算法资料"></a>机器学习<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/92760753">算法资料</a></h4><h2 id="大数据工程师技能要求"><a href="#大数据工程师技能要求" class="headerlink" title="大数据工程师技能要求"></a>大数据工程师技能要求</h2><p><img src="/../../../%E5%A4%A7%E6%95%B0%E6%8D%AE%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/v2-b3238d63d96cf09fb3a31035c969d468_720w.jpg" alt="大数据工程师技能"></p>
+<p>每天3小时，每周每天10小时，3个月就会有（21×3+4×2×10）×3=423小时，差不多就是18天</p>
+<h2 id="项目实战"><a href="#项目实战" class="headerlink" title="项目实战"></a>项目实战</h2><p>YouTube项目：<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/av46279488?from=search&seid=9082792700815539199">Hive</a></p>
+<p>微博项目：<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/av47966656?from=search&seid=15571841572335097117">HBase</a></p>
+<p>电商数据分析平台：<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/av51501619?p=25">Spark</a></p>
+<p>电信客服系统：<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/av39312730?from=search&seid=9082792700815539199">Hadoop</a></p>
+<p>滴滴系统：<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/av47297403?from=search&seid=2895912804952398963">Kafka+Storm</a></p>
+<p>大数据离线平台：<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/av46287611?from=search&seid=9082792700815539199">Hadoop+Flume+Hive+HBase</a></p>
+<p>电商数仓项目：<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/av55357971?from=search&seid=13797269418701982102">Hadoop+Zookeeper+Hive+Flume+Kafka+Spark</a></p>
+<p>电商推荐系统（类似于电影推荐系统）：<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/av52027052?p=2">Hadoop+ZK+Flume+Kafka+Spark+Redis+MongoDB</a></p>
+<p>电影推荐系统（2019版也有个一样的电影推荐系统，代码应该类似）：<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1CJ411Q7L9?p=63">Hadoop+ZK+Flume+Kafka+Spark+Redis+MongoDB+ElasticSearch</a></p>
+<p>基于阿里云搭建数据仓库（离线、实时）：ECS（日志生产服务器）+Flume+DataHub +MaxCompute/DataWorks +RDS（业务数据）+QuickBI</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1QJ411k76B?from=search&seid=5345818275548812087">离线</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1pJ411r7Yk?from=search&seid=5345818275548812087">实时</a></p>
+</blockquote>
+<p>实时项目（电商数仓实时）：<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1kA41147bS?from=search&seid=12616316689401784017">Hive+Kafka+Redis+Nginx+ElasticSearch+Canal</a></p>
+<p>手机APP信息统计：<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/av51501685?from=search&seid=13797269418701982102">Hadoop+ZK+Flume+Kafka+Hive+HBase+Spark</a></p>
+<p>在线教育项目：<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/av63729562?p=13">Hadoop+Flume+Kafka+Hive+MySQL+Spark</a></p>
+<p>基于Flink的电商用户行为数据分析：<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1gJ411Q72x?from=search&seid=5800841516085262679">Kafka+Flink</a></p>
+<h2 id="大数据历程"><a href="#大数据历程" class="headerlink" title="大数据历程"></a>大数据历程</h2><p><img src="https://pic2.zhimg.com/80/v2-60e036c128aefe8bc313d21775dc45fd_720w.jpg" alt="大数据发展历程"></p>
+<p>个人整理：</p>
+<blockquote>
+<ol>
+<li><p>普遍认为<em>最伟大的时代变革点</em>是Google的<em>“三驾马车”</em>，2004年三篇重要论文的发表</p>
+<blockquote>
+<p>分布式文件系统 GFS</p>
+<p>大数据分布式计算框架-MapReduce</p>
+<p>NoSQL的数据库系统BigTable</p>
+</blockquote>
+<p>主要解决搜索引擎的两件事：<em>数据采集</em>，<em>数据搜索</em></p>
+</li>
+<li><p>Lucene（ElasticSearch的底层）项目创始人实现原型功能框架，类似于GFS和MapReduce，2006年Hadoop产品的前身被开发出来</p>
+</li>
+<li><p>Yahoo很快使用Hadoop，百度2007年也开始使用大数据存储与计算</p>
+</li>
+<li><p>2008年Hadoop正式成为Apache的顶级项目。与此同时，Yahoo自己基于MapReduce开发出Pig，类似于SQL语句的脚本语言，可直接生成MapReduce程序</p>
+</li>
+<li><p>Facebook为了数据分析也开发出一种新的数据分析工具–Hive，直接使用SQL语句进行大数据计算</p>
+<p>至此，大数据的主要技术栈完成，包括HDFS，MapReduce，Pig，Hive.</p>
+</li>
+<li><p><em>责任单一Yarn</em>，拆分MapReduce的资源调度框架，执行框架，2012年开始运营Yarn</p>
+</li>
+<li><p>同年，伯克利的一位博士开发出Spark代替MapReduce，至此，MapReduce时代结束</p>
+<blockquote>
+<p>大数据计算根据数据分析方式不同，有两种类别。</p>
+<p>一种是批处理计算，它主要是对某个时间段的数据进行计算，这种计算因为数据量大，非实时计算，历史积累的数据处理，也就是离线数据，又称为“离线数据”，代表性框架：MapReduce，Spark</p>
+<p>另一种是对实时数据进行处理，又称为流式计算，“实时计算”，代表性框架：Storm，Flink，Spark Streaming</p>
+<p>Flink既支持流式，又支持批处理</p>
+</blockquote>
+</li>
+<li><p>2011年左右，HBase从Hadoop中拆分出去，成员又增加</p>
+</li>
+<li><p>机器学习，数据挖掘，数据分析技术的成熟</p>
+<p><img src="https://pic2.zhimg.com/80/v2-81829c1243f5dcd1e0ffd4a1f8538be9_720w.jpg" alt="大数据的早期成型"></p>
+</li>
+</ol>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://example.com">youngCerulean</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2021/01/28/%E5%A4%A7%E6%95%B0%E6%8D%AE%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/">http://example.com/2021/01/28/%E5%A4%A7%E6%95%B0%E6%8D%AE%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">Cerulean Deer</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Hadoop/">Hadoop</a></div><div class="post_share"><div class="social-share" data-image="http://www.cbdio.com/classicon/jpg/site2/20141121/1416557569281.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2021/03/13/Dynamic%20Programming/" title="四大算法--动态规划"><img class="cover" src="https://kafka.apachecn.org/images/logo.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">四大算法--动态规划</div></div></a></div><div class="next-post pull-right"><a href="/2021/01/13/Kafka%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0(%E4%B8%80)/" title="Kafka 学习笔记(一)"><img class="cover" src="https://kafka.apachecn.org/images/logo.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Kafka 学习笔记(一)</div></div></a></div></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://inews.gtimg.com/newsapp_bt/0/12993593928/641" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">youngCerulean</div><div class="author-info__description">THE GOOD DAY START FROM THERE</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">9</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/xiaokaizhenshaui" target="_blank" title="GitHub"><i class="fab fa-github"></i></a><a class="social-icon" href="/1328033780" target="_blank" title="QQ"><i class="fab fa-qq"></i></a><a class="social-icon" href="https://blog.csdn.net/Youth_lql" target="_blank" title="我的CSDN"><i class="fa fa-address-card"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">悬赏栏</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">大数据入门学习</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%A7%E6%95%B0%E6%8D%AE%E6%A6%82%E5%BF%B5"><span class="toc-number">1.1.</span> <span class="toc-text">大数据概念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%89%B9%E7%82%B9%EF%BC%885V%EF%BC%89%EF%BC%9A"><span class="toc-number">1.2.</span> <span class="toc-text">大数据特点（5V）：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%A7%E6%95%B0%E6%8D%AE%E5%AD%A6%E4%B9%A0%E5%8E%86%E7%A8%8B%EF%BC%9A"><span class="toc-number">1.3.</span> <span class="toc-text">大数据学习历程：</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Java%E8%AF%AD%E8%A8%80%E7%9A%84%E5%AD%A6%E4%B9%A0"><span class="toc-number">1.3.0.1.</span> <span class="toc-text">Java语言的学习</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Linux%E7%B3%BB%E7%BB%9F-amp-Hadoop%E7%94%9F%E6%80%81%E7%B3%BB%E7%BB%9F"><span class="toc-number">1.3.0.2.</span> <span class="toc-text">Linux系统&amp;Hadoop生态系统</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#Linux%E5%85%A5%E9%97%A8"><span class="toc-number">1.3.0.2.0.1.</span> <span class="toc-text">Linux入门</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#Hadoop%E7%94%9F%E6%80%81%EF%BC%88-%EF%BC%89"><span class="toc-number">1.3.0.2.0.2.</span> <span class="toc-text">Hadoop生态（**）</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#Zookeeper%E5%85%A5%E9%97%A8"><span class="toc-number">1.3.0.2.0.3.</span> <span class="toc-text">Zookeeper入门</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#Hive%E5%85%A5%E9%97%A8%EF%BC%88-%EF%BC%89"><span class="toc-number">1.3.0.2.0.4.</span> <span class="toc-text">Hive入门（*）</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#Flume%E8%AF%A6%E8%A7%A3"><span class="toc-number">1.3.0.2.0.5.</span> <span class="toc-text">Flume详解</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#Hbase"><span class="toc-number">1.3.0.2.0.6.</span> <span class="toc-text">Hbase(*)</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#Kafka"><span class="toc-number">1.3.0.2.0.7.</span> <span class="toc-text">Kafka(*)</span></a></li></ol></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%A1%E7%AE%97%E6%A1%86%E6%9E%B6"><span class="toc-number">1.3.0.3.</span> <span class="toc-text">分布式计算框架</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A4%A7%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90"><span class="toc-number">1.3.0.4.</span> <span class="toc-text">大数据分析</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%AE%97%E6%B3%95%E8%B5%84%E6%96%99"><span class="toc-number">1.3.0.5.</span> <span class="toc-text">机器学习算法资料</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%A7%E6%95%B0%E6%8D%AE%E5%B7%A5%E7%A8%8B%E5%B8%88%E6%8A%80%E8%83%BD%E8%A6%81%E6%B1%82"><span class="toc-number">1.4.</span> <span class="toc-text">大数据工程师技能要求</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%B9%E7%9B%AE%E5%AE%9E%E6%88%98"><span class="toc-number">1.5.</span> <span class="toc-text">项目实战</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%A7%E6%95%B0%E6%8D%AE%E5%8E%86%E7%A8%8B"><span class="toc-number">1.6.</span> <span class="toc-text">大数据历程</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/03/10/Kafka%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0(%E4%B8%80)/Kafkawindow%E7%8E%AF%E5%A2%83%E9%80%82%E9%85%8D/" title="无题"><img src="https://i.loli.net/2021/01/06/c5h23kGVUq7YMx6.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="无题"/></a><div class="content"><a class="title" href="/2022/03/10/Kafka%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0(%E4%B8%80)/Kafkawindow%E7%8E%AF%E5%A2%83%E9%80%82%E9%85%8D/" title="无题">无题</a><time datetime="2022-03-10T08:48:56.598Z" title="发表于 2022-03-10 16:48:56">2022-03-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/17/JDK8-JDK17%E4%B8%AA%E7%89%88%E6%9C%AC%E9%87%8D%E8%A6%81%E7%89%B9%E6%80%A7/" title="无题"><img src="https://i.loli.net/2021/01/06/c5h23kGVUq7YMx6.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="无题"/></a><div class="content"><a class="title" href="/2022/01/17/JDK8-JDK17%E4%B8%AA%E7%89%88%E6%9C%AC%E9%87%8D%E8%A6%81%E7%89%B9%E6%80%A7/" title="无题">无题</a><time datetime="2022-01-17T08:49:42.571Z" title="发表于 2022-01-17 16:49:42">2022-01-17</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/17/ElasticSearch%E5%AD%A6%E4%B9%A0%E6%89%8B%E5%86%8C/" title="ElasticSearch学习手册"><img src="https://i.loli.net/2021/01/06/c5h23kGVUq7YMx6.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="ElasticSearch学习手册"/></a><div class="content"><a class="title" href="/2022/01/17/ElasticSearch%E5%AD%A6%E4%B9%A0%E6%89%8B%E5%86%8C/" title="ElasticSearch学习手册">ElasticSearch学习手册</a><time datetime="2022-01-17T06:01:40.679Z" title="发表于 2022-01-17 14:01:40">2022-01-17</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/03/24/SpringStream%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B%E5%AD%A6%E4%B9%A0(%E6%9B%B4%E6%96%B0%E4%B8%AD%EF%BC%89/" title="SpringStream入门教程学习"><img src="https://i.loli.net/2021/01/06/c5h23kGVUq7YMx6.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="SpringStream入门教程学习"/></a><div class="content"><a class="title" href="/2021/03/24/SpringStream%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B%E5%AD%A6%E4%B9%A0(%E6%9B%B4%E6%96%B0%E4%B8%AD%EF%BC%89/" title="SpringStream入门教程学习">SpringStream入门教程学习</a><time datetime="2021-03-24T02:12:25.000Z" title="发表于 2021-03-24 10:12:25">2021-03-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/03/23/%E7%BA%BF%E7%A8%8B%E6%B1%A0%E4%B8%8E%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%8F%96%E8%88%8D/" title="多线程，线程池"><img src="https://i.loli.net/2021/01/06/c5h23kGVUq7YMx6.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="多线程，线程池"/></a><div class="content"><a class="title" href="/2021/03/23/%E7%BA%BF%E7%A8%8B%E6%B1%A0%E4%B8%8E%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%8F%96%E8%88%8D/" title="多线程，线程池">多线程，线程池</a><time datetime="2021-03-23T02:12:25.000Z" title="发表于 2021-03-23 10:12:25">2021-03-23</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('https://i.loli.net/2021/01/06/1P5hM9NQVynfwIG.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2023 By youngCerulean</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>(() => {
+  const initValine = () => {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: '',
+      appKey: '',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  const loadValine = async () => {
+    if (typeof Valine === 'function') initValine()
+    else {
+      await getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js')
+      initValine()
+    }
+  }
+
+  if ('Valine' === 'Valine' || !true) {
+    if (true) btf.loadComment(document.getElementById('vcomment'),loadValine)
+    else setTimeout(loadValine, 0)
+  } else {
+    window.loadOtherComment = loadValine
+  }
+})()</script></div><link rel="stylesheet" href="http://localhost:4000/css/xiao.css"><script data-pjax src="http://localhost:4000/js/xiao.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>

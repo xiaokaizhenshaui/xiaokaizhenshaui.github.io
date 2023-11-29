@@ -1,0 +1,402 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Docker 学习笔记 | Cerulean Deer</title><meta name="author" content="youngCerulean"><meta name="copyright" content="youngCerulean"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Docker简易学习  Docker初始学习 Docker的应用场景 web应用的自动化打包和发布 自动化测试集成和发布 部署服务型环境后台应用  Docker的优点 docker是一个用于开发，交付和运行应用程序的开放平台。 可以构建出虚拟环境，大大减少编写代码和在生产环境中运行代码之间的延迟。"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2021/01/11/Docker%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Docker 学习笔记',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-01-27 16:48:35'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.0.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://inews.gtimg.com/newsapp_bt/0/12993593928/641" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">9</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw iconfont icon-shouyex"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw iconfont icon-fenlei1"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw iconfont icon-biaoqian1"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw iconfont icon-shijianzhou"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw iconfont icon-shenghuo"></i><span> 清单</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/messageboard/"><i class="fa-fw iconfont icon-liaotian-04"></i><span> 留言板</span></a></li><li><a class="site-page child" href="/link/"><i class="fa-fw iconfont icon-lianjie"></i><span> 友人帐</span></a></li><li><a class="site-page child" href="/share/"><i class="fa-fw iconfont icon-fenxiang"></i><span> 分享</span></a></li><li><a class="site-page child" href="/gallery/"><i class="fa-fw iconfont icon-xiangce"></i><span> 相册</span></a></li><li><a class="site-page child" href="/books/"><i class="fa-fw iconfont icon-shuji"></i><span> 书籍</span></a></li><li><a class="site-page child" href="/FilmAndTV/"><i class="fa-fw iconfont icon-yingshi1"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw iconfont icon-gerenzhongxin"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://i.loli.net/2021/01/06/1P5hM9NQVynfwIG.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="Cerulean Deer"><span class="site-name">Cerulean Deer</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw iconfont icon-shouyex"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw iconfont icon-fenlei1"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw iconfont icon-biaoqian1"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw iconfont icon-shijianzhou"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw iconfont icon-shenghuo"></i><span> 清单</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/messageboard/"><i class="fa-fw iconfont icon-liaotian-04"></i><span> 留言板</span></a></li><li><a class="site-page child" href="/link/"><i class="fa-fw iconfont icon-lianjie"></i><span> 友人帐</span></a></li><li><a class="site-page child" href="/share/"><i class="fa-fw iconfont icon-fenxiang"></i><span> 分享</span></a></li><li><a class="site-page child" href="/gallery/"><i class="fa-fw iconfont icon-xiangce"></i><span> 相册</span></a></li><li><a class="site-page child" href="/books/"><i class="fa-fw iconfont icon-shuji"></i><span> 书籍</span></a></li><li><a class="site-page child" href="/FilmAndTV/"><i class="fa-fw iconfont icon-yingshi1"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw iconfont icon-gerenzhongxin"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Docker 学习笔记</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-01-11T08:11:25.000Z" title="发表于 2021-01-11 16:11:25">2021-01-11</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-01-27T08:48:35.427Z" title="更新于 2021-01-27 16:48:35">2021-01-27</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Docker 学习笔记"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 align ="center">Docker简易学习</h1>
+
+<h2 id="Docker初始学习"><a href="#Docker初始学习" class="headerlink" title="Docker初始学习"></a>Docker初始学习</h2><p><img src="https://i.loli.net/2021/01/11/Nq4Vc9tlf5OpRdr.png" alt="image-20210111152302544.png"></p>
+<h4 id="Docker的应用场景"><a href="#Docker的应用场景" class="headerlink" title="Docker的应用场景"></a>Docker的应用场景</h4><ul>
+<li>web应用的自动化打包和发布</li>
+<li>自动化测试集成和发布</li>
+<li>部署服务型环境后台应用</li>
+</ul>
+<h4 id="Docker的优点"><a href="#Docker的优点" class="headerlink" title="Docker的优点"></a>Docker的优点</h4><blockquote>
+<p>docker是一个用于开发，交付和运行应用程序的开放平台。</p>
+<p>可以构建出虚拟环境，大大减少编写代码和在生产环境中运行代码之间的延迟。</p>
+</blockquote>
+<ol>
+<li>快速交付应用</li>
+<li>响应式部署和扩展</li>
+<li>统一硬件上运行更多的工作负载</li>
+</ol>
+<h2 id="Docker架构"><a href="#Docker架构" class="headerlink" title="Docker架构"></a>Docker架构</h2><h4 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h4><blockquote>
+<ul>
+<li>镜像：相当于一个root文件系统</li>
+<li>容器：镜像（Image）和容器（Container）的关系，就像是面向对象程序设计中的类和实例一样，镜像是静态的定义，容器是镜像运行时的实体。容器可以被创建、启动、停止、删除、暂停等。</li>
+<li>仓库：代码控制中心，用来保存镜像</li>
+</ul>
+</blockquote>
+<h2 id="Docker安装🔧"><a href="#Docker安装🔧" class="headerlink" title="Docker安装🔧"></a>Docker安装🔧</h2><h4 id="CentOS-Docker（CentOS7以上64位版本）"><a href="#CentOS-Docker（CentOS7以上64位版本）" class="headerlink" title="CentOS Docker（CentOS7以上64位版本）"></a>CentOS Docker（CentOS7以上64位版本）</h4><ul>
+<li><p>官方脚本</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun</span><br></pre></td></tr></table></figure>
+
+<p>国内统一源daocloud</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -sSL https://get.daocloud.io/docker | sh</span><br></pre></td></tr></table></figure></li>
+<li><p>手动安装</p>
+<ul>
+<li><p>先卸载旧版本</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ sudo yum remove docker \</span><br><span class="line">                  docker-client \</span><br><span class="line">                  docker-client-latest \</span><br><span class="line">                  docker-common \</span><br><span class="line">                  docker-latest \</span><br><span class="line">                  docker-latest-logrotate \</span><br><span class="line">                  docker-logrotate \</span><br><span class="line">                  docker-engine</span><br></pre></td></tr></table></figure></li>
+<li><p>安装Docker仓库</p>
+<ul>
+<li><p>设置仓库</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ sudo yum install -y yum-utils \</span><br><span class="line">  device-mapper-persistent-data \</span><br><span class="line">  lvm2</span><br></pre></td></tr></table></figure></li>
+<li><p>设置源地址</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ sudo yum-config-manager \</span><br><span class="line">    --add-repo \</span><br><span class="line">    http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li><p>安装Docker Engine-Community</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo yum install docker-ce docker-ce-cli containerd.io</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li><p>启动Docker</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo systemctl start docker</span><br></pre></td></tr></table></figure></li>
+<li><p>测试运行</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo docker run hello-world</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h4 id="Windows-Docker（Not-Suggest）"><a href="#Windows-Docker（Not-Suggest）" class="headerlink" title="Windows Docker（Not Suggest）"></a>Windows Docker（Not Suggest）</h4><ul>
+<li><p>Docker依赖于已经存在并运行的Linux内核环境</p>
+</li>
+<li><p>Docker Desktop是win10和MacOS上官方安装方式</p>
+</li>
+</ul>
+<ul>
+<li><p>开启Hyper-V</p>
+<blockquote>
+<p>Hyper-V 是微软开发的虚拟机，类似于 VMWare 或 VirtualBox，仅适用于 Windows 10。这是 Docker Desktop for Windows 所使用的虚拟机。</p>
+<p>但是，这个虚拟机一旦启用，QEMU、VirtualBox 或 VMWare Workstation 15 及以下版本将无法使用！如果你必须在电脑上使用其他虚拟机（例如开发 Android 应用必须使用的模拟器），请不要使用 Hyper-V！</p>
+</blockquote>
+<p>在“应用于功能”中选择hyper-V</p>
+<p>或者在超管的CMD中执行</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All</span><br></pre></td></tr></table></figure>
+
+<p>安装<a target="_blank" rel="noopener" href="https://hub.docker.com/?overlay=onboarding">Docker Desktop</a></p>
+</li>
+<li><p>检测是否成功</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run hello-world</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h4 id="MacOS🍎"><a href="#MacOS🍎" class="headerlink" title="MacOS🍎"></a>MacOS🍎</h4><ul>
+<li><p>使用HomeBrew安装</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ brew install --cask --appdir=/Applications docker</span><br></pre></td></tr></table></figure></li>
+<li><p>手动下载</p>
+<p><a target="_blank" rel="noopener" href="https://download.docker.com/mac/edge/Docker.dmg">Edge版本</a>和<a target="_blank" rel="noopener" href="https://download.docker.com/mac/stable/Docker.dmg">Stable版本</a>的Docker for Mac</p>
+</li>
+<li><p>启动终端后，通过命令检查Docker版本</p>
+</li>
+<li><p>镜像加速</p>
+</li>
+</ul>
+<h4 id="Docker镜像加速🚀"><a href="#Docker镜像加速🚀" class="headerlink" title="Docker镜像加速🚀"></a>Docker镜像加速🚀</h4><ul>
+<li><p>网易：<strong><a target="_blank" rel="noopener" href="https://hub-mirror.c.163.com/">https://hub-mirror.c.163.com/</a></strong></p>
+</li>
+<li><p>阿里云：<strong>https://&lt;你的ID&gt;.mirror.aliyuncs.com</strong></p>
+</li>
+<li><p>七牛云加速器：<strong><a target="_blank" rel="noopener" href="https://reg-mirror.qiniu.com/">https://reg-mirror.qiniu.com</a></strong></p>
+</li>
+<li><p>查看加速器是否生效</p>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker info</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h4 id="Docker版本"><a href="#Docker版本" class="headerlink" title="Docker版本"></a>Docker版本</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker version</span><br></pre></td></tr></table></figure>
+
+<h2 id="Docker的使用"><a href="#Docker的使用" class="headerlink" title="Docker的使用"></a>Docker的使用</h2><h4 id="Docker-Hello-World"><a href="#Docker-Hello-World" class="headerlink" title="Docker Hello World"></a>Docker Hello World</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run ubuntu:15.10 /bin/echo &quot;Hello world&quot;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>参数解析:</p>
+<blockquote>
+<ul>
+<li><strong>docker:</strong> Docker 的二进制执行文件。</li>
+<li><strong>run:</strong> 与前面的 docker 组合来运行一个容器。</li>
+<li><strong>ubuntu:15.10</strong> 指定要运行的镜像，Docker 首先从本地主机上查找镜像是否存在，如果不存在，Docker 就会从镜像仓库 Docker Hub 下载公共镜像。</li>
+<li><strong>/bin/echo “Hello world”:</strong> 在启动的容器里执行的命令</li>
+</ul>
+</blockquote>
+<p>解释为：Docker 以ubuntu15.10镜像创建一个新的容器，然后再容器里执行bin/echo  “Hello world”，然后输出结果。</p>
+</blockquote>
+<ul>
+<li><p>交互式运行</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -i -t ubuntu:15.10 /bin/bash</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>参数解析：</p>
+<blockquote>
+<ul>
+<li><strong>-t:</strong> 在新容器内指定一个伪终端或终端。</li>
+<li><strong>-i:</strong> 允许你对容器内的标准输入 (STDIN) 进行交互。</li>
+</ul>
+</blockquote>
+<p>随后会进入容器内部，实现操作容器</p>
+<p>可使用exit或者ctrl+D来退出</p>
+</blockquote>
+</li>
+<li><p>启动容器</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -d ubuntu:15.10 /bin/sh -c &quot;while true; do echo hello world; sleep 1; done&quot;</span><br></pre></td></tr></table></figure>
+
+<p>启动一个容器，会返回一个容器ID</p>
+<p>用 **docker ps **来查看运行容器</p>
+</li>
+<li><p>停止容器</p>
+<p>使用<strong>docker stop</strong> id来停止容器</p>
+</li>
+</ul>
+<h4 id="Docker的使用-1"><a href="#Docker的使用-1" class="headerlink" title="Docker的使用"></a>Docker的使用</h4><ul>
+<li><p>获取容器</p>
+<blockquote>
+<p>如果我们本地没有 ubuntu 镜像，我们可以使用 docker pull 命令来载入 ubuntu 镜像</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull ubuntu</span><br></pre></td></tr></table></figure></blockquote>
+</li>
+<li><p>启动容器</p>
+<p>使用ubuntu镜像启动一个容器，参数为一命令行模式进入该容器</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -it ubuntu /bin/bash</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>参数说明：</p>
+<blockquote>
+<ul>
+<li><strong>-i</strong>: 交互式操作。</li>
+<li><strong>-t</strong>: 终端。</li>
+<li><strong>ubuntu</strong>: ubuntu 镜像。</li>
+<li><strong>/bin/bash</strong>：放在镜像名后的是命令，这里我们希望有个交互式 Shell，因此用的是 /bin/bash。</li>
+</ul>
+</blockquote>
+</blockquote>
+<p>使用<strong>docker start id</strong>来启动一个已经停止的容器。</p>
+</li>
+<li><p>后台进入和后台退出</p>
+<p>指定容器运行模式 <strong>-d</strong> 且默认不会进入后台</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -itd --name ubuntu-test ubuntu /bin/bash</span><br></pre></td></tr></table></figure>
+
+<p>进入 后台容器 中，退出容器不会导致容器停止</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker exec -it id /bin/bash</span><br></pre></td></tr></table></figure></li>
+<li><p>删除容器</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker rm -f id</span><br></pre></td></tr></table></figure>
+
+<p>处理所有处于终止的容器</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker container prune</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h4 id="Docker镜像的使用"><a href="#Docker镜像的使用" class="headerlink" title="Docker镜像的使用"></a>Docker镜像的使用</h4><ul>
+<li><p>管理和使用本地Docker主机镜像</p>
+<ul>
+<li><p>展示镜像</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker images</span><br></pre></td></tr></table></figure></li>
+<li><p>获取一个新的镜像</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull ubuntu:15.10</span><br></pre></td></tr></table></figure></li>
+<li><p>拖取镜像</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull httpd</span><br></pre></td></tr></table></figure>
+
+<p>拖取完就可以使用</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run httpd</span><br></pre></td></tr></table></figure></li>
+<li><p>删除镜像</p>
+<p>使用 <strong>docker rmi</strong> 命令进行删除</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker rmi hello-world</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li><p>创建镜像</p>
+<ul>
+<li><p>构建镜像</p>
+<p>使用 <strong>docker build</strong> 来创建一个新的镜像</p>
+<ol>
+<li><p>创建一个Dockerfile文件</p>
+</li>
+<li><p>使用 ** docker build -t images-name .</p>
+<blockquote>
+<ul>
+<li><strong>-t</strong> ：指定要创建的目标镜像名</li>
+<li><strong>.</strong> ：Dockerfile 文件所在目录，可以指定Dockerfile 的绝对路径</li>
+</ul>
+</blockquote>
+</li>
+</ol>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="Docker-Dockerfile"><a href="#Docker-Dockerfile" class="headerlink" title="Docker Dockerfile"></a>Docker Dockerfile</h4><blockquote>
+<p>Dockerfile 是一个用来构建镜像的文本文件，文本内容包含了一条条构建镜像所需的指令和说明。</p>
+</blockquote>
+<h4 id="Docker-Compose"><a href="#Docker-Compose" class="headerlink" title="Docker Compose"></a>Docker Compose</h4><blockquote>
+<p>Compose 是用于定义和运行多容器 Docker 应用程序的工具。通过 Compose，您可以使用 YML 文件来配置应用程序需要的所有服务。然后，使用一个命令，就可以从 YML 文件配置中创建并启动所有服务。</p>
+<blockquote>
+<p>Compose 使用的三个步骤：</p>
+<ul>
+<li>使用 Dockerfile 定义应用程序的环境。</li>
+<li>使用 docker-compose.yml 定义构成应用程序的服务，这样它们可以在隔离环境中一起运行。</li>
+<li>最后，执行 docker-compose up 命令来启动并运行整个应用程序。</li>
+</ul>
+</blockquote>
+</blockquote>
+<h4 id="守护式容器🛡"><a href="#守护式容器🛡" class="headerlink" title="守护式容器🛡"></a>守护式容器🛡</h4><ul>
+<li><p>启动：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -d container_id</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="暂时结尾😊"><a href="#暂时结尾😊" class="headerlink" title="暂时结尾😊"></a>暂时结尾😊</h2><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/H4ck3R-XiX/p/12227485.html">docker 指令快速查询</a> 👈</p>
+<p><a target="_blank" rel="noopener" href="https://www.docker.org.cn/">docker中文网</a>👈</p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/blissnmx/article/details/102922847">docker的简易框架，链接在此👇</a></p>
+<img src="https://i.loli.net/2021/01/11/bBRy6rzLwOYcTxF.png" alt="docker-xmind.png" style="zoom:150%;" />
+
+<p>（后续待更新）</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://example.com">youngCerulean</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2021/01/11/Docker%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/">http://example.com/2021/01/11/Docker%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">Cerulean Deer</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Docker/">Docker</a></div><div class="post_share"><div class="social-share" data-image="https://i.loli.net/2021/01/11/Nq4Vc9tlf5OpRdr.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-full"><a href="/2021/01/13/Kafka%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0(%E4%B8%80)/" title="Kafka 学习笔记(一)"><img class="cover" src="https://kafka.apachecn.org/images/logo.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Kafka 学习笔记(一)</div></div></a></div></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://inews.gtimg.com/newsapp_bt/0/12993593928/641" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">youngCerulean</div><div class="author-info__description">THE GOOD DAY START FROM THERE</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">9</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/xiaokaizhenshaui" target="_blank" title="GitHub"><i class="fab fa-github"></i></a><a class="social-icon" href="/1328033780" target="_blank" title="QQ"><i class="fab fa-qq"></i></a><a class="social-icon" href="https://blog.csdn.net/Youth_lql" target="_blank" title="我的CSDN"><i class="fa fa-address-card"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">悬赏栏</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">Docker简易学习</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Docker%E5%88%9D%E5%A7%8B%E5%AD%A6%E4%B9%A0"><span class="toc-number">1.1.</span> <span class="toc-text">Docker初始学习</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Docker%E7%9A%84%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-number">1.1.0.1.</span> <span class="toc-text">Docker的应用场景</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Docker%E7%9A%84%E4%BC%98%E7%82%B9"><span class="toc-number">1.1.0.2.</span> <span class="toc-text">Docker的优点</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Docker%E6%9E%B6%E6%9E%84"><span class="toc-number">1.2.</span> <span class="toc-text">Docker架构</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="toc-number">1.2.0.1.</span> <span class="toc-text">基本概念</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Docker%E5%AE%89%E8%A3%85%F0%9F%94%A7"><span class="toc-number">1.3.</span> <span class="toc-text">Docker安装🔧</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#CentOS-Docker%EF%BC%88CentOS7%E4%BB%A5%E4%B8%8A64%E4%BD%8D%E7%89%88%E6%9C%AC%EF%BC%89"><span class="toc-number">1.3.0.1.</span> <span class="toc-text">CentOS Docker（CentOS7以上64位版本）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Windows-Docker%EF%BC%88Not-Suggest%EF%BC%89"><span class="toc-number">1.3.0.2.</span> <span class="toc-text">Windows Docker（Not Suggest）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#MacOS%F0%9F%8D%8E"><span class="toc-number">1.3.0.3.</span> <span class="toc-text">MacOS🍎</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Docker%E9%95%9C%E5%83%8F%E5%8A%A0%E9%80%9F%F0%9F%9A%80"><span class="toc-number">1.3.0.4.</span> <span class="toc-text">Docker镜像加速🚀</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Docker%E7%89%88%E6%9C%AC"><span class="toc-number">1.3.0.5.</span> <span class="toc-text">Docker版本</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Docker%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-number">1.4.</span> <span class="toc-text">Docker的使用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Docker-Hello-World"><span class="toc-number">1.4.0.1.</span> <span class="toc-text">Docker Hello World</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Docker%E7%9A%84%E4%BD%BF%E7%94%A8-1"><span class="toc-number">1.4.0.2.</span> <span class="toc-text">Docker的使用</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Docker%E9%95%9C%E5%83%8F%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-number">1.4.0.3.</span> <span class="toc-text">Docker镜像的使用</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Docker-Dockerfile"><span class="toc-number">1.4.0.4.</span> <span class="toc-text">Docker Dockerfile</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Docker-Compose"><span class="toc-number">1.4.0.5.</span> <span class="toc-text">Docker Compose</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%88%E6%8A%A4%E5%BC%8F%E5%AE%B9%E5%99%A8%F0%9F%9B%A1"><span class="toc-number">1.4.0.6.</span> <span class="toc-text">守护式容器🛡</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9A%82%E6%97%B6%E7%BB%93%E5%B0%BE%F0%9F%98%8A"><span class="toc-number">1.5.</span> <span class="toc-text">暂时结尾😊</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/03/10/Kafka%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0(%E4%B8%80)/Kafkawindow%E7%8E%AF%E5%A2%83%E9%80%82%E9%85%8D/" title="无题"><img src="https://i.loli.net/2021/01/06/c5h23kGVUq7YMx6.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="无题"/></a><div class="content"><a class="title" href="/2022/03/10/Kafka%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0(%E4%B8%80)/Kafkawindow%E7%8E%AF%E5%A2%83%E9%80%82%E9%85%8D/" title="无题">无题</a><time datetime="2022-03-10T08:48:56.598Z" title="发表于 2022-03-10 16:48:56">2022-03-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/17/JDK8-JDK17%E4%B8%AA%E7%89%88%E6%9C%AC%E9%87%8D%E8%A6%81%E7%89%B9%E6%80%A7/" title="无题"><img src="https://i.loli.net/2021/01/06/c5h23kGVUq7YMx6.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="无题"/></a><div class="content"><a class="title" href="/2022/01/17/JDK8-JDK17%E4%B8%AA%E7%89%88%E6%9C%AC%E9%87%8D%E8%A6%81%E7%89%B9%E6%80%A7/" title="无题">无题</a><time datetime="2022-01-17T08:49:42.571Z" title="发表于 2022-01-17 16:49:42">2022-01-17</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/17/ElasticSearch%E5%AD%A6%E4%B9%A0%E6%89%8B%E5%86%8C/" title="ElasticSearch学习手册"><img src="https://i.loli.net/2021/01/06/c5h23kGVUq7YMx6.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="ElasticSearch学习手册"/></a><div class="content"><a class="title" href="/2022/01/17/ElasticSearch%E5%AD%A6%E4%B9%A0%E6%89%8B%E5%86%8C/" title="ElasticSearch学习手册">ElasticSearch学习手册</a><time datetime="2022-01-17T06:01:40.679Z" title="发表于 2022-01-17 14:01:40">2022-01-17</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/03/24/SpringStream%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B%E5%AD%A6%E4%B9%A0(%E6%9B%B4%E6%96%B0%E4%B8%AD%EF%BC%89/" title="SpringStream入门教程学习"><img src="https://i.loli.net/2021/01/06/c5h23kGVUq7YMx6.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="SpringStream入门教程学习"/></a><div class="content"><a class="title" href="/2021/03/24/SpringStream%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B%E5%AD%A6%E4%B9%A0(%E6%9B%B4%E6%96%B0%E4%B8%AD%EF%BC%89/" title="SpringStream入门教程学习">SpringStream入门教程学习</a><time datetime="2021-03-24T02:12:25.000Z" title="发表于 2021-03-24 10:12:25">2021-03-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/03/23/%E7%BA%BF%E7%A8%8B%E6%B1%A0%E4%B8%8E%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%8F%96%E8%88%8D/" title="多线程，线程池"><img src="https://i.loli.net/2021/01/06/c5h23kGVUq7YMx6.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="多线程，线程池"/></a><div class="content"><a class="title" href="/2021/03/23/%E7%BA%BF%E7%A8%8B%E6%B1%A0%E4%B8%8E%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%8F%96%E8%88%8D/" title="多线程，线程池">多线程，线程池</a><time datetime="2021-03-23T02:12:25.000Z" title="发表于 2021-03-23 10:12:25">2021-03-23</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('https://i.loli.net/2021/01/06/1P5hM9NQVynfwIG.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2023 By youngCerulean</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>(() => {
+  const initValine = () => {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: '',
+      appKey: '',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  const loadValine = async () => {
+    if (typeof Valine === 'function') initValine()
+    else {
+      await getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js')
+      initValine()
+    }
+  }
+
+  if ('Valine' === 'Valine' || !true) {
+    if (true) btf.loadComment(document.getElementById('vcomment'),loadValine)
+    else setTimeout(loadValine, 0)
+  } else {
+    window.loadOtherComment = loadValine
+  }
+})()</script></div><link rel="stylesheet" href="http://localhost:4000/css/xiao.css"><script data-pjax src="http://localhost:4000/js/xiao.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>

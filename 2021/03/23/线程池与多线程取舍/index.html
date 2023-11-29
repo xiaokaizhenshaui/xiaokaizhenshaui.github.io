@@ -1,0 +1,211 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>多线程，线程池 | Cerulean Deer</title><meta name="author" content="youngCerulean"><meta name="copyright" content="youngCerulean"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="线程池与多线程取舍  产生原因以前遇到的文件下载做法是重新写一个xxxExport 但是遇到一个更好的办法，直接使用我们select中的Page即可 具体方法如下 12345678&amp;#x2F;&amp;#x2F;写入headersString[] headers &amp;#x3D; &amp;#123;&amp;quot;&amp;quot;,&amp;quot;&amp;amp;quot"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2021/03/23/%E7%BA%BF%E7%A8%8B%E6%B1%A0%E4%B8%8E%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%8F%96%E8%88%8D/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '多线程，线程池',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-03-26 13:57:32'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.0.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://inews.gtimg.com/newsapp_bt/0/12993593928/641" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">9</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw iconfont icon-shouyex"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw iconfont icon-fenlei1"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw iconfont icon-biaoqian1"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw iconfont icon-shijianzhou"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw iconfont icon-shenghuo"></i><span> 清单</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/messageboard/"><i class="fa-fw iconfont icon-liaotian-04"></i><span> 留言板</span></a></li><li><a class="site-page child" href="/link/"><i class="fa-fw iconfont icon-lianjie"></i><span> 友人帐</span></a></li><li><a class="site-page child" href="/share/"><i class="fa-fw iconfont icon-fenxiang"></i><span> 分享</span></a></li><li><a class="site-page child" href="/gallery/"><i class="fa-fw iconfont icon-xiangce"></i><span> 相册</span></a></li><li><a class="site-page child" href="/books/"><i class="fa-fw iconfont icon-shuji"></i><span> 书籍</span></a></li><li><a class="site-page child" href="/FilmAndTV/"><i class="fa-fw iconfont icon-yingshi1"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw iconfont icon-gerenzhongxin"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://i.loli.net/2021/01/06/1P5hM9NQVynfwIG.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="Cerulean Deer"><span class="site-name">Cerulean Deer</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw iconfont icon-shouyex"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw iconfont icon-fenlei1"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw iconfont icon-biaoqian1"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw iconfont icon-shijianzhou"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw iconfont icon-shenghuo"></i><span> 清单</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/messageboard/"><i class="fa-fw iconfont icon-liaotian-04"></i><span> 留言板</span></a></li><li><a class="site-page child" href="/link/"><i class="fa-fw iconfont icon-lianjie"></i><span> 友人帐</span></a></li><li><a class="site-page child" href="/share/"><i class="fa-fw iconfont icon-fenxiang"></i><span> 分享</span></a></li><li><a class="site-page child" href="/gallery/"><i class="fa-fw iconfont icon-xiangce"></i><span> 相册</span></a></li><li><a class="site-page child" href="/books/"><i class="fa-fw iconfont icon-shuji"></i><span> 书籍</span></a></li><li><a class="site-page child" href="/FilmAndTV/"><i class="fa-fw iconfont icon-yingshi1"></i><span> 影视</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw iconfont icon-gerenzhongxin"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">多线程，线程池</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-03-23T02:12:25.000Z" title="发表于 2021-03-23 10:12:25">2021-03-23</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-03-26T05:57:32.092Z" title="更新于 2021-03-26 13:57:32">2021-03-26</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="多线程，线程池"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><center><h1 style="color:skyblue">线程池与多线程取舍</h1></center>
+
+<h2 id="产生原因"><a href="#产生原因" class="headerlink" title="产生原因"></a>产生原因</h2><p>以前遇到的文件下载做法是重新写一个xxxExport</p>
+<p>但是遇到一个更好的办法，直接使用我们select中的Page即可</p>
+<p>具体方法如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//写入headers</span></span><br><span class="line">String[] headers = &#123;<span class="string">&quot;&quot;</span>,<span class="string">&quot;&quot;</span>,<span class="string">&quot;&quot;</span>&#125;; </span><br><span class="line"><span class="comment">//调用select中的函数，拿到Page</span></span><br><span class="line"><span class="type">Page</span> <span class="variable">page</span> <span class="operator">=</span> selectxxx(pageNo,PageSize);</span><br><span class="line"><span class="comment">//拿到Page中的总页数</span></span><br><span class="line"><span class="type">Page</span> <span class="variable">page2</span> <span class="operator">=</span> selectxxx(<span class="number">1</span>,(<span class="type">int</span>)page.getTotal());</span><br><span class="line"><span class="comment">//执行excelDownload</span></span><br><span class="line">excelDownLoad(response,headers,page2);</span><br></pre></td></tr></table></figure>
+
+<p>因为循环内部出现查询和判断，执行效率极其慢，查一页是10s，查146条基本上是∞，所以果断采用了多线程进行提速，因为执行的数据不是相互依赖的数据，所以可以选择普通的多线程方法。</p>
+<blockquote>
+<p>前后踩得坑</p>
+<ul>
+<li><p>坑一：自己参照写了一个List来承接数据，然后进行处理</p>
+<p>处理速度没有任何提升，甚至还需要自己多次修改。</p>
+</li>
+<li><p>坑二：使用线程池来加速处理</p>
+<p>因为迭代器自身是一个类似于悲观锁的处理机制，在线程无法处理时就跳过处理，导致数据无法拿到</p>
+</li>
+<li><p>坑三：可能会导致OOM</p>
+<p>这个暂时没法解决，为了速度牺牲内存</p>
+</li>
+</ul>
+</blockquote>
+<p>对于Page的下载，部分代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">excelDownLoad</span><span class="params">(HttpServletResponse response, String[] headers, Page page)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="comment">// 声明一个工作薄</span></span><br><span class="line">        <span class="type">XSSFWorkbook</span> <span class="variable">workbook</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">XSSFWorkbook</span>();</span><br><span class="line">        <span class="comment">// 生成一个表格</span></span><br><span class="line">        <span class="type">XSSFSheet</span> <span class="variable">sheet</span> <span class="operator">=</span> workbook.createSheet();</span><br><span class="line">        <span class="comment">// 设置表格默认列宽度为15个字节</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; headers.length; i++) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">colWidth</span> <span class="operator">=</span> sheet.getColumnWidth(i) * <span class="number">2</span>;</span><br><span class="line">            <span class="keyword">if</span> (colWidth &lt; <span class="number">255</span> * <span class="number">256</span>) &#123;</span><br><span class="line">                sheet.setColumnWidth(i, colWidth &lt; <span class="number">3000</span> ? <span class="number">3000</span> : colWidth);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                sheet.setColumnWidth(i, <span class="number">6000</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="type">XSSFRow</span> <span class="variable">row</span> <span class="operator">=</span> sheet.createRow(<span class="number">0</span>);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">short</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; headers.length; i++) &#123;</span><br><span class="line">            <span class="type">XSSFCell</span> <span class="variable">cell</span> <span class="operator">=</span> row.createCell(i);</span><br><span class="line">            <span class="type">XSSFRichTextString</span> <span class="variable">text</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">XSSFRichTextString</span>(headers[i]);</span><br><span class="line">            cell.setCellValue(text);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//遍历集合数据，产生数据行</span></span><br><span class="line">        <span class="type">Iterator</span> <span class="variable">it</span> <span class="operator">=</span> page.getRecords().iterator();</span><br><span class="line">        <span class="type">int</span> <span class="variable">index</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span> (it.hasNext()) &#123;</span><br><span class="line">            index++;</span><br><span class="line">            row = sheet.createRow(index);</span><br><span class="line">            Map&lt;String, Object&gt; map = JSONObject.parseObject(JSONObject.toJSONString(it.next()), Map.class);</span><br><span class="line">            <span class="type">ImplProjectExcelVo</span> <span class="variable">objectValue</span> <span class="operator">=</span> JSONObject.parseObject(JSONObject.toJSONString(map), ImplProjectExcelVo.class);</span><br><span class="line">            <span class="comment">//利用反射，根据javabean属性的先后顺序，动态调用getXxx()方法得到属性值</span></span><br><span class="line">            Field[] fields = objectValue.getClass().getDeclaredFields();</span><br><span class="line">            <span class="comment">// 这里遍历fields 每个属性</span></span><br><span class="line">            <span class="keyword">for</span> (<span class="type">short</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; fields.length; i++) &#123;</span><br><span class="line">                <span class="type">XSSFCell</span> <span class="variable">cell</span> <span class="operator">=</span> row.createCell(i);</span><br><span class="line">                <span class="type">Field</span> <span class="variable">field</span> <span class="operator">=</span> fields[i];</span><br><span class="line">                <span class="type">String</span> <span class="variable">fieldName</span> <span class="operator">=</span> field.getName();</span><br><span class="line">                <span class="type">String</span> <span class="variable">getMethodName</span> <span class="operator">=</span> <span class="string">&quot;get&quot;</span> + fieldName.substring(<span class="number">0</span>, <span class="number">1</span>).toUpperCase() + fieldName.substring(<span class="number">1</span>);</span><br><span class="line">                <span class="comment">// 提取getName() 这样方法</span></span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    <span class="type">Class</span> <span class="variable">tCls</span> <span class="operator">=</span> objectValue.getClass();</span><br><span class="line">                    <span class="type">Method</span> <span class="variable">getMethod</span> <span class="operator">=</span> tCls.getMethod(getMethodName,</span><br><span class="line">                            <span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;&#125;);</span><br><span class="line">                    <span class="type">Object</span> <span class="variable">value</span> <span class="operator">=</span> getMethod.invoke(objectValue, <span class="keyword">new</span> <span class="title class_">Object</span>[]&#123;&#125;);</span><br><span class="line">                    <span class="comment">// 通过底层invoke 开启bug拿到值</span></span><br><span class="line">                    <span class="type">String</span> <span class="variable">textValue</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">                    <span class="comment">// 对于日期的值 转为日期 非日期的值当做字符串处理</span></span><br><span class="line">                    <span class="keyword">if</span> (value <span class="keyword">instanceof</span> Date) &#123;</span><br><span class="line">                        <span class="type">Date</span> <span class="variable">date</span> <span class="operator">=</span> (Date) value;</span><br><span class="line">                        <span class="type">SimpleDateFormat</span> <span class="variable">sdf</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">SimpleDateFormat</span>(<span class="string">&quot;yyyy-MM-dd HH:mm:ss&quot;</span>);</span><br><span class="line">                        textValue = sdf.format(date);</span><br><span class="line">                    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                        <span class="comment">//其它数据类型都当作字符串简单处理</span></span><br><span class="line">                        <span class="keyword">if</span> (value == <span class="literal">null</span>) &#123;</span><br><span class="line">                            textValue = <span class="string">&quot;&quot;</span>;</span><br><span class="line">                        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                            textValue = value.toString();</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                    cell.setCellValue(textValue);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        response.setCharacterEncoding(<span class="string">&quot;UTF-8&quot;</span>);</span><br><span class="line">        <span class="comment">// 设置contentType为excel格式</span></span><br><span class="line">        response.setContentType(<span class="string">&quot;application/vnd.ms-excel;charset=utf-8&quot;</span>);</span><br><span class="line">        <span class="comment">//默认Excel名称</span></span><br><span class="line">        response.setHeader(<span class="string">&quot;Content-disposition&quot;</span>, <span class="string">&quot;attachment;filename=&quot;</span> +</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">String</span>(<span class="string">&quot;表名&quot;</span>.getBytes(<span class="string">&quot;utf-8&quot;</span>), <span class="string">&quot;ISO-8859-1&quot;</span>) + <span class="string">&quot;.xlsx&quot;</span>);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            response.flushBuffer();</span><br><span class="line">            workbook.write(response.getOutputStream());</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IOException</span>(<span class="string">&quot;导出Excel出现严重异常，异常信息：&quot;</span> + e.getMessage());</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                workbook.close();</span><br><span class="line">            &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="多线程"><a href="#多线程" class="headerlink" title="多线程"></a>多线程</h2><ol>
+<li><p>具体如何解决</p>
+<blockquote>
+<ol>
+<li><p>建立线程池</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">ExecutorService</span> <span class="variable">pool</span> <span class="operator">=</span> Executors.newCachedThreadPool();</span><br></pre></td></tr></table></figure></li>
+<li><p>使用计数器</p>
+<p>CountDownLatch latch = new CountDownLatch(pageSize);</p>
+</li>
+</ol>
+</blockquote>
+</li>
+<li><p>可以使用别的方法</p>
+</li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://example.com">youngCerulean</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2021/03/23/%E7%BA%BF%E7%A8%8B%E6%B1%A0%E4%B8%8E%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%8F%96%E8%88%8D/">http://example.com/2021/03/23/%E7%BA%BF%E7%A8%8B%E6%B1%A0%E4%B8%8E%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%8F%96%E8%88%8D/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">Cerulean Deer</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/TaskPool/">TaskPool</a></div><div class="post_share"><div class="social-share" data-image="https://i.loli.net/2021/01/06/c5h23kGVUq7YMx6.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2021/03/24/SpringStream%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B%E5%AD%A6%E4%B9%A0(%E6%9B%B4%E6%96%B0%E4%B8%AD%EF%BC%89/" title="SpringStream入门教程学习"><img class="cover" src="https://i.loli.net/2021/01/06/c5h23kGVUq7YMx6.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">SpringStream入门教程学习</div></div></a></div><div class="next-post pull-right"><a href="/2021/03/13/Dynamic%20Programming/" title="四大算法--动态规划"><img class="cover" src="https://kafka.apachecn.org/images/logo.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">四大算法--动态规划</div></div></a></div></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://inews.gtimg.com/newsapp_bt/0/12993593928/641" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">youngCerulean</div><div class="author-info__description">THE GOOD DAY START FROM THERE</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">9</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/xiaokaizhenshaui" target="_blank" title="GitHub"><i class="fab fa-github"></i></a><a class="social-icon" href="/1328033780" target="_blank" title="QQ"><i class="fab fa-qq"></i></a><a class="social-icon" href="https://blog.csdn.net/Youth_lql" target="_blank" title="我的CSDN"><i class="fa fa-address-card"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">悬赏栏</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">线程池与多线程取舍</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%A7%E7%94%9F%E5%8E%9F%E5%9B%A0"><span class="toc-number">1.1.</span> <span class="toc-text">产生原因</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%9A%E7%BA%BF%E7%A8%8B"><span class="toc-number">1.2.</span> <span class="toc-text">多线程</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/03/10/Kafka%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0(%E4%B8%80)/Kafkawindow%E7%8E%AF%E5%A2%83%E9%80%82%E9%85%8D/" title="无题"><img src="https://i.loli.net/2021/01/06/c5h23kGVUq7YMx6.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="无题"/></a><div class="content"><a class="title" href="/2022/03/10/Kafka%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0(%E4%B8%80)/Kafkawindow%E7%8E%AF%E5%A2%83%E9%80%82%E9%85%8D/" title="无题">无题</a><time datetime="2022-03-10T08:48:56.598Z" title="发表于 2022-03-10 16:48:56">2022-03-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/17/JDK8-JDK17%E4%B8%AA%E7%89%88%E6%9C%AC%E9%87%8D%E8%A6%81%E7%89%B9%E6%80%A7/" title="无题"><img src="https://i.loli.net/2021/01/06/c5h23kGVUq7YMx6.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="无题"/></a><div class="content"><a class="title" href="/2022/01/17/JDK8-JDK17%E4%B8%AA%E7%89%88%E6%9C%AC%E9%87%8D%E8%A6%81%E7%89%B9%E6%80%A7/" title="无题">无题</a><time datetime="2022-01-17T08:49:42.571Z" title="发表于 2022-01-17 16:49:42">2022-01-17</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/17/ElasticSearch%E5%AD%A6%E4%B9%A0%E6%89%8B%E5%86%8C/" title="ElasticSearch学习手册"><img src="https://i.loli.net/2021/01/06/c5h23kGVUq7YMx6.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="ElasticSearch学习手册"/></a><div class="content"><a class="title" href="/2022/01/17/ElasticSearch%E5%AD%A6%E4%B9%A0%E6%89%8B%E5%86%8C/" title="ElasticSearch学习手册">ElasticSearch学习手册</a><time datetime="2022-01-17T06:01:40.679Z" title="发表于 2022-01-17 14:01:40">2022-01-17</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/03/24/SpringStream%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B%E5%AD%A6%E4%B9%A0(%E6%9B%B4%E6%96%B0%E4%B8%AD%EF%BC%89/" title="SpringStream入门教程学习"><img src="https://i.loli.net/2021/01/06/c5h23kGVUq7YMx6.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="SpringStream入门教程学习"/></a><div class="content"><a class="title" href="/2021/03/24/SpringStream%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B%E5%AD%A6%E4%B9%A0(%E6%9B%B4%E6%96%B0%E4%B8%AD%EF%BC%89/" title="SpringStream入门教程学习">SpringStream入门教程学习</a><time datetime="2021-03-24T02:12:25.000Z" title="发表于 2021-03-24 10:12:25">2021-03-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/03/23/%E7%BA%BF%E7%A8%8B%E6%B1%A0%E4%B8%8E%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%8F%96%E8%88%8D/" title="多线程，线程池"><img src="https://i.loli.net/2021/01/06/c5h23kGVUq7YMx6.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="多线程，线程池"/></a><div class="content"><a class="title" href="/2021/03/23/%E7%BA%BF%E7%A8%8B%E6%B1%A0%E4%B8%8E%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%8F%96%E8%88%8D/" title="多线程，线程池">多线程，线程池</a><time datetime="2021-03-23T02:12:25.000Z" title="发表于 2021-03-23 10:12:25">2021-03-23</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('https://i.loli.net/2021/01/06/1P5hM9NQVynfwIG.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2023 By youngCerulean</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>(() => {
+  const initValine = () => {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: '',
+      appKey: '',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  const loadValine = async () => {
+    if (typeof Valine === 'function') initValine()
+    else {
+      await getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js')
+      initValine()
+    }
+  }
+
+  if ('Valine' === 'Valine' || !true) {
+    if (true) btf.loadComment(document.getElementById('vcomment'),loadValine)
+    else setTimeout(loadValine, 0)
+  } else {
+    window.loadOtherComment = loadValine
+  }
+})()</script></div><link rel="stylesheet" href="http://localhost:4000/css/xiao.css"><script data-pjax src="http://localhost:4000/js/xiao.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>
