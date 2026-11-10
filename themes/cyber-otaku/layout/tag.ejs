@@ -1,0 +1,16 @@
+<div class="list-page">
+  <div class="page-head terminal-window compact">
+    <div class="window-bar"><span class="win-dots"><i class="d-red"></i><i class="d-yellow"></i><i class="d-green"></i></span><span class="window-title">grep -r "#<%- page.tag %>"</span></div>
+    <div class="page-head-body">
+      <div class="hero-cmd"><span class="prompt">$</span> grep -rl "#<%- page.tag %>" ./source/_posts</div>
+      <h1>#<%- page.tag %></h1>
+      <p class="page-subtitle">命中 <%- page.posts.length %> 篇</p>
+    </div>
+  </div>
+  <div class="post-grid">
+    <% page.posts.sort('-date').toArray().forEach(function (p) { %>
+      <%- partial('_partial/post-card', { p: p }) %>
+    <% }); %>
+  </div>
+  <%- partial('_partial/pagination') %>
+</div>

@@ -1,0 +1,23 @@
+<header class="site-header" id="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="<%- url_for('/') %>" aria-label="回到首页">
+      <span class="brand-mark" aria-hidden="true">◈</span>
+      <span class="brand-text" data-glitch="<%- config.title %>"><%- config.title %></span>
+      <span class="brand-cursor" aria-hidden="true">_</span>
+    </a>
+
+    <nav class="nav" id="nav" aria-label="主导航">
+      <% for (var name in theme.menu) { %>
+        <a class="nav-item <%- is_current(theme.menu[name]) ? 'is-active' : '' %>" href="<%- url_for(theme.menu[name]) %>"><%- name %></a>
+      <% } %>
+    </nav>
+
+    <div class="header-actions">
+      <button class="icon-btn search-trigger" id="search-trigger" type="button" aria-label="打开搜索" title="搜索 (/)">
+        <span class="icon-search" aria-hidden="true">⌕</span><span class="search-label">搜索</span><kbd>/</kbd>
+      </button>
+      <button class="icon-btn nav-toggle" id="nav-toggle" type="button" aria-label="展开菜单" aria-expanded="false"><span aria-hidden="true">☰</span></button>
+    </div>
+  </div>
+  <div class="header-progress" id="header-progress" aria-hidden="true"></div>
+</header>

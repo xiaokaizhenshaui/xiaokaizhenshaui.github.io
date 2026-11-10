@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 350" role="img" aria-label="ThreadPoolExecutor 任务调度">
+<defs>
+<pattern id="g" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M24 0H0V24" fill="none" stroke="#1e2740" stroke-width="1"/></pattern>
+<marker id="ar" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0 0 L8 3 L0 6 z" fill="#a98bff"/></marker>
+</defs>
+<rect width="880" height="350" fill="#0d1120"/>
+<rect width="880" height="350" fill="url(#g)"/>
+<rect x="12" y="12" width="856" height="326" rx="10" fill="none" stroke="#2a3352" stroke-width="1.5"/>
+<text x="30" y="42" font-family="ui-monospace,Menlo,monospace" font-size="13" fill="#45e0f5">FIG // ThreadPoolExecutor 任务调度</text>
+<text x="30" y="63" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="12" fill="#7b88b0">核心线程 → 队列 → 最大线程 → 拒绝策略</text>
+<line x1="30" y1="76" x2="850" y2="76" stroke="#2a3352" stroke-width="1"/>
+<rect x="30" y="130" width="150" height="70" rx="8" fill="#121728" stroke="#45e0f5" stroke-width="1.6"/>
+<text x="105.0" y="165.0" text-anchor="middle" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="15" fill="#eef1ff">提交任务</text>
+<text x="105.0" y="185.0" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#7b88b0">execute()</text><rect x="230" y="130" width="170" height="70" rx="8" fill="#121728" stroke="#9ce884" stroke-width="1.6"/>
+<text x="315.0" y="165.0" text-anchor="middle" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="15" fill="#eef1ff">corePoolSize</text>
+<text x="315.0" y="185.0" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#7b88b0">未满则建线程</text><rect x="450" y="130" width="170" height="70" rx="8" fill="#121728" stroke="#a98bff" stroke-width="1.6"/>
+<text x="535.0" y="165.0" text-anchor="middle" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="15" fill="#eef1ff">BlockingQueue</text>
+<text x="535.0" y="185.0" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#7b88b0">核心满了先入队</text><rect x="670" y="130" width="170" height="70" rx="8" fill="#121728" stroke="#ffb86c" stroke-width="1.6"/>
+<text x="755.0" y="165.0" text-anchor="middle" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="15" fill="#eef1ff">maxPoolSize</text>
+<text x="755.0" y="185.0" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#7b88b0">队列也满了才扩容</text><line x1="180" y1="165" x2="230" y2="165" stroke="#a98bff" stroke-width="2" marker-end="url(#ar)"/><line x1="400" y1="165" x2="450" y2="165" stroke="#a98bff" stroke-width="2" marker-end="url(#ar)"/><line x1="620" y1="165" x2="670" y2="165" stroke="#a98bff" stroke-width="2" marker-end="url(#ar)"/><rect x="670" y="240" width="170" height="60" rx="8" fill="#121728" stroke="#ff77c8" stroke-width="1.6"/>
+<text x="755.0" y="270.0" text-anchor="middle" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="12" fill="#eef1ff">RejectedExecutionHandler</text>
+<text x="755.0" y="290.0" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#7b88b0">抛异常 / 丢弃 / 调用方跑</text><line x1="755" y1="200" x2="755" y2="240" stroke="#a98bff" stroke-width="2" marker-end="url(#ar)"/><text x="30" y="290" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="12" fill="#7b88b0">用无界队列时 maxPoolSize 基本不会生效 —— 这是最常见的「线程池参数配了没用」</text></svg>

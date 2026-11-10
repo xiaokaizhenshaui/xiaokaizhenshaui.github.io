@@ -1,0 +1,45 @@
+<%
+var posts = page.posts ? page.posts.sort('-date').toArray() : site.posts.sort('-date').toArray();
+var groups = {};
+posts.forEach(function (p) {
+  var y = date(p.date, 'YYYY');
+  if (!groups[y]) groups[y] = [];
+  groups[y].push(p);
+});
+var years = Object.keys(groups).sort().reverse();
+var total = posts.length;
+%>
+<div class="archive-page">
+  <div class="page-head terminal-window">
+    <div class="window-bar">
+      <span class="win-dots"><i class="d-red"></i><i class="d-yellow"></i><i class="d-green"></i></span>
+      <span class="window-title">git log --oneline --all</span>
+      <span class="window-status"><%- total %> commits</span>
+    </div>
+    <div class="page-head-body">
+      <div class="hero-cmd"><span class="prompt">$</span> git log --pretty=format:"%ad %s" --date=short</div>
+      <h1>归档 <span class="dim">/ archives</span></h1>
+      <p class="page-subtitle">从 2021 年那篇 Docker 笔记开始，断更过，又捡起来了。</p>
+    </div>
+  </div>
+
+  <% years.forEach(function (y) { %>
+  <section class="archive-year">
+    <h2 class="year-head"><span class="year-branch">◆</span> <%- y %> <span class="year-count"><%- groups[y].length %> posts</span></h2>
+    <ul class="archive-list">
+      <% groups[y].forEach(function (p) { %>
+        <li class="archive-item">
+          <span class="commit-dot" aria-hidden="true"></span>
+          <time datetime="<%- date_xml(p.date) %>"><%- date(p.date, 'MM-DD') %></time>
+          <a href="<%- url_for(p.path) %>"><%- p.title %></a>
+          <% if (p.categories.toArray().length) { %>
+            <span class="archive-cat">[<%- p.categories.toArray().map(function(c){return c.name}).join(' / ') %>]</span>
+          <% } %>
+        </li>
+      <% }); %>
+    </ul>
+  </section>
+  <% }); %>
+
+  <%- partial('_partial/pagination') %>
+</div>

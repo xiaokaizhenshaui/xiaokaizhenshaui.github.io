@@ -1,0 +1,67 @@
+# Cerulean Deer / Hexo 自动部署
+#
+# 仓库 Pages 当前 build_type=workflow：push 到 main 即由本工作流
+# 用官方 actions/deploy-pages 构建并发布，站点内容来自构建产物（artifact），
+# 而非 main 分支里的源码文件。
+#
+# 写新文章：在 source/_posts/ 下加 .md，push 即自动发版。
+# front-matter 必填 title / date / categories / tags / lead；图片一律放 source/images/。
+
+name: Build & Deploy Hexo
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: 安装依赖
+        run: npm ci --no-audit --no-fund
+
+      - name: 校验文章与图片
+        run: python3 tools/check_assets.py
+
+      - name: 生成静态站点
+        run: |
+          npx hexo clean
+          npx hexo generate
+          touch public/.nojekyll
+          test -f public/index.html
+          test -f public/search.json
+          test -f public/atom.xml
+          test -f public/vendor/agent-build.min.js
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

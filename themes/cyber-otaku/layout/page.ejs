@@ -1,0 +1,16 @@
+<article class="single-page">
+  <div class="page-head terminal-window">
+    <div class="window-bar">
+      <span class="win-dots"><i class="d-red"></i><i class="d-yellow"></i><i class="d-green"></i></span>
+      <span class="window-title"><%- page.source.replace(/^source\//, '').replace(/\.md$/, '') %>.md</span>
+    </div>
+    <div class="page-head-body">
+      <div class="hero-cmd"><span class="prompt">$</span> cat ./<%- page.title %></div>
+      <h1><%- page.title %></h1>
+      <% if (page.subtitle) { %><p class="page-subtitle"><%- page.subtitle %></p><% } %>
+    </div>
+  </div>
+  <div class="article-content single-content">
+    <%- page.content %>
+  </div>
+</article>

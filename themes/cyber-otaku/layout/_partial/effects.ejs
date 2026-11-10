@@ -1,0 +1,56 @@
+<%
+var fx = theme.effects || {};
+var fxOn = fx.enabled !== false;
+%>
+<% if (fxOn) { %>
+<!-- 夜之城远景，单独挂在最底层，不参与覆盖层堆叠 -->
+<div class="fx-city" id="fx-city" aria-hidden="true"></div>
+
+<div class="fx-layer" id="fx-layer"
+     data-particles="<%- fx.particles || 60 %>"
+     data-city="<%- url_for(fx.city_image || '/images/hero-city.webp') %>"
+     aria-hidden="true">
+  <canvas class="fx-particles" id="fx-particles"></canvas>
+  <div class="fx-scanlines"></div>
+  <div class="fx-vignette"></div>
+  <div class="fx-cursor-glow" id="fx-cursor-glow"></div>
+</div>
+
+<div class="fx-waifu" id="fx-waifu">
+  <div class="fx-waifu-bubble" id="fx-waifu-bubble" role="status" aria-live="polite"></div>
+  <button class="fx-waifu-face" id="fx-waifu-face" type="button" aria-label="和看板娘说句话" title="点一下说句话">
+    <img src="<%- url_for(theme.avatar) %>" alt="" width="64" height="64" loading="lazy">
+    <span class="fx-waifu-online"></span>
+  </button>
+</div>
+
+<div class="fx-dock" id="fx-dock">
+  <button class="fx-dock-toggle" id="fx-dock-toggle" type="button" aria-expanded="false" aria-controls="fx-dock-panel" title="特效开关">
+    <span class="fx-dock-icon" aria-hidden="true">◈</span><span>FX</span>
+  </button>
+  <div class="fx-dock-panel" id="fx-dock-panel" hidden>
+    <div class="fx-dock-head"><span>// fx.console</span><span class="fx-dock-sys">NIGHT CITY</span></div>
+
+    <%# agent-build：hidden 由库在可运行时移除；文案由库中文本地化写入 %>
+    <button class="fx-build-btn" data-agent-build hidden
+            data-agent-pace="<%- fx.agent_pace || 0.9 %>"
+            data-agent-count="<%- fx.agent_count || 18 %>"
+            data-agent-accent="<%- fx.agent_accent || '#45e0f5' %>"
+            data-agent-hub="<%- url_for(fx.hub || '/images/hub.svg') %>"></button>
+
+    <div class="fx-switches">
+      <label><input type="checkbox" data-fx-toggle="particles" checked><span>粒子</span></label>
+      <label><input type="checkbox" data-fx-toggle="city" checked><span>夜之城</span></label>
+      <label><input type="checkbox" data-fx-toggle="scan" checked><span>扫描线</span></label>
+      <label><input type="checkbox" data-fx-toggle="glow" checked><span>光晕</span></label>
+      <label><input type="checkbox" data-fx-toggle="waifu" checked><span>看板娘</span></label>
+    </div>
+
+    <div class="fx-hud" id="fx-hud">
+      <span class="fx-hud-dot"></span><span id="fx-clock">--:--:--</span>
+      <span class="fx-hud-sep">/</span><span id="fx-state">ONLINE</span>
+    </div>
+    <p class="fx-dock-tip">Ctrl/⌘ + Shift + B 或 ↑↑↓↓←→←→BA 也能触发重建</p>
+  </div>
+</div>
+<% } %>

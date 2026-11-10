@@ -1,0 +1,118 @@
+# ============================================================
+# Cerulean Deer / Hexo site config
+# 修正了旧站遗留的 canonical: http://example.com 问题
+# ============================================================
+title: Cerulean Deer
+subtitle: '~/devlog'
+description: 'Java、全栈、中间件、AI 工具与大模型的踩坑记录。一个后端仔的碎碎念。'
+keywords: 'Java,Spring Boot,全栈,TypeScript,GraphQL,Kafka,Redis,大模型,AI 工具,技术博客'
+author: youngCerulean
+language: zh-CN
+timezone: Asia/Shanghai
+
+url: https://xiaokaizhenshaui.github.io
+root: /
+permalink: :year/:month/:day/:title/
+permalink_defaults:
+pretty_urls:
+  trailing_index: true
+  trailing_html: true
+
+# 目录
+source_dir: source
+public_dir: public
+tag_dir: tags
+archive_dir: archives
+category_dir: categories
+code_dir: downloads/code
+i18n_dir: :lang
+skip_render:
+
+# 写作
+new_post_name: :title.md
+default_layout: post
+titlecase: false
+filename_case: 0
+render_drafts: false
+post_asset_folder: true
+relative_link: false
+future: true
+auto_spacing: false
+
+external_link:
+  enable: true
+  field: site
+  exclude: 'xiaokaizhenshaui.github.io'
+
+# 代码高亮（Hexo 7 语法）
+syntax_highlighter: highlight.js
+highlight:
+  wrap: true
+  line_number: true
+  tab_replace: '  '
+  auto_detect: true
+  hljs: false
+  line_threshold: 0
+
+marked:
+  gfm: true
+  breaks: false
+  pedantic: false
+  sanitizeUrl: false
+  headerIds: true
+  anchorAlias: false
+
+# 分页
+index_generator:
+  path: ''
+  per_page: 8
+  order_by: -date
+archive_generator:
+  per_page: 50
+  yearly: true
+  monthly: true
+  daily: false
+category_generator:
+  per_page: 30
+  enable_index_page: false
+tag_generator:
+  per_page: 30
+  enable_index_page: false
+
+# 中文分类 → 干净的英文 slug（首页系列卡片按这些路径跳转）
+category_map:
+  Java 开发: java
+  全栈开发: fullstack
+  中间件: middleware
+  AI 工具: ai-tools
+  大模型: llm
+  月度报告: monthly
+  随笔: notes
+
+tag_map:
+  Java: java
+  JVM: jvm
+  Spring Boot: spring-boot
+  GraphQL: graphql
+  TypeScript: typescript
+  Kafka: kafka
+  Redis: redis
+  MySQL: mysql
+  Docker: docker
+  虚拟线程: virtual-threads
+  RAG: rag
+  MCP: mcp
+
+# 本地搜索 / RSS 由 scripts/ 下的自定义 generator 生成
+search:
+  path: search.json
+  field: all
+
+feed:
+  path: atom.xml
+  limit: 20
+
+theme: cyber-otaku
+
+# 部署交给 GitHub Actions，不使用 hexo deploy
+deploy: []

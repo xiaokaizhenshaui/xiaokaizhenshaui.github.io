@@ -1,0 +1,68 @@
+<%
+var cats = page.categories ? page.categories.toArray() : [];
+var tags = page.tags ? page.tags.toArray() : [];
+var charLen = String(page.content || '').replace(/<[^>]*>/g, '').replace(/\s/g, '').length;
+var readMin = Math.max(1, Math.round(charLen / 400));
+var related = site.posts.filter(function (p) {
+  return p.path !== page.path && p.categories.toArray().some(function (c) {
+    return cats.some(function (pc) { return pc.name === c.name; });
+  });
+}).sort('-date').limit(3).toArray();
+%>
+<article class="post-page" itemscope itemtype="https://schema.org/BlogPosting">
+  <nav class="breadcrumb" aria-label="面包屑">
+    <a href="<%- url_for('/') %>">~</a><span>/</span>
+    <a href="<%- url_for('/archives/') %>">posts</a><span>/</span>
+    <span><%- date(page.date, 'YYYY') %></span><span>/</span>
+    <span class="crumb-current"><%- page.title %></span>
+  </nav>
+
+  <header class="post-header">
+    <div class="post-kicker">
+      <% cats.forEach(function (c) { %><a class="post-cat" href="<%- url_for(c.path) %>"># <%- c.name %></a><% }); %>
+    </div>
+    <h1 class="post-title" itemprop="headline"><%- page.title %></h1>
+    <div class="post-meta">
+      <span class="meta-author"><img src="<%- url_for(theme.avatar) %>" alt="" width="20" height="20"><%- config.author %></span>
+      <time datetime="<%- date_xml(page.date) %>" itemprop="datePublished"><%- date(page.date, 'YYYY-MM-DD') %></time>
+      <% if (page.updated) { %><span class="meta-updated">更新于 <%- date(page.updated, 'YYYY-MM-DD') %></span><% } %>
+      <span><%- charLen %> 字</span>
+      <span>约 <%- readMin %> 分钟</span>
+    </div>
+    <% if (tags.length) { %>
+      <div class="post-tags"><% tags.forEach(function (t) { %><a href="<%- url_for(t.path) %>">#<%- t.name %></a><% }); %></div>
+    <% } %>
+  </header>
+
+  <% if (page.cover) { %>
+    <figure class="post-cover"><img src="<%- url_for(page.cover) %>" alt="<%- page.title %> 封面" loading="lazy"></figure>
+  <% } %>
+
+  <% if (page.lead) { %>
+    <div class="post-lead"><span class="lead-label">TL;DR</span><p><%- page.lead %></p></div>
+  <% } %>
+
+  <div class="article-content" itemprop="articleBody">
+    <%- page.content %>
+  </div>
+
+  <div class="post-end">
+    <div class="end-line"><span>EOF</span></div>
+    <p class="post-copyright"><%- theme.post.copyright %></p>
+    <div class="post-nav">
+      <% if (page.prev) { %>
+        <a class="post-nav-item prev" href="<%- url_for(page.prev.path) %>"><span>← 上一篇</span><strong><%- page.prev.title %></strong></a>
+      <% } %>
+      <% if (page.next) { %>
+        <a class="post-nav-item next" href="<%- url_for(page.next.path) %>"><span>下一篇 →</span><strong><%- page.next.title %></strong></a>
+      <% } %>
+    </div>
+  </div>
+
+  <% if (related.length) { %>
+  <section class="related">
+    <div class="section-head"><span class="section-tag">// related</span><h2>接着看</h2><span class="section-line"></span></div>
+    <ul><% related.forEach(function (p) { %><li><a href="<%- url_for(p.path) %>"><span><%- date(p.date, 'MM-DD') %></span><%- p.title %></a></li><% }); %></ul>
+  </section>
+  <% } %>
+</article>

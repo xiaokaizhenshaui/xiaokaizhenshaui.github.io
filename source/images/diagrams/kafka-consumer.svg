@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 380" role="img" aria-label="Consumer Group 分区分配">
+<defs>
+<pattern id="g" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M24 0H0V24" fill="none" stroke="#1e2740" stroke-width="1"/></pattern>
+<marker id="ar" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0 0 L8 3 L0 6 z" fill="#a98bff"/></marker>
+</defs>
+<rect width="880" height="380" fill="#0d1120"/>
+<rect width="880" height="380" fill="url(#g)"/>
+<rect x="12" y="12" width="856" height="356" rx="10" fill="none" stroke="#2a3352" stroke-width="1.5"/>
+<text x="30" y="42" font-family="ui-monospace,Menlo,monospace" font-size="13" fill="#45e0f5">FIG // Consumer Group 分区分配</text>
+<text x="30" y="63" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="12" fill="#7b88b0">同一 group.id 内分区互斥；不同组互不影响</text>
+<line x1="30" y1="76" x2="850" y2="76" stroke="#2a3352" stroke-width="1"/>
+<rect x="60" y="130" width="90" height="60" rx="8" fill="#121728" stroke="#9ce884" stroke-width="1.6"/>
+<text x="105.0" y="165.0" text-anchor="middle" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="16" fill="#eef1ff">P0</text><rect x="180" y="130" width="90" height="60" rx="8" fill="#121728" stroke="#9ce884" stroke-width="1.6"/>
+<text x="225.0" y="165.0" text-anchor="middle" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="16" fill="#eef1ff">P1</text><rect x="300" y="130" width="90" height="60" rx="8" fill="#121728" stroke="#9ce884" stroke-width="1.6"/>
+<text x="345.0" y="165.0" text-anchor="middle" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="16" fill="#eef1ff">P2</text><rect x="420" y="130" width="90" height="60" rx="8" fill="#121728" stroke="#9ce884" stroke-width="1.6"/>
+<text x="465.0" y="165.0" text-anchor="middle" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="16" fill="#eef1ff">P3</text><rect x="250" y="255" width="150" height="65" rx="8" fill="#121728" stroke="#ff77c8" stroke-width="1.6"/>
+<text x="325.0" y="287.5" text-anchor="middle" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="14" fill="#eef1ff">C1</text>
+<text x="325.0" y="307.5" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#7b88b0">group: stock-svc</text><rect x="510" y="255" width="150" height="65" rx="8" fill="#121728" stroke="#ff77c8" stroke-width="1.6"/>
+<text x="585.0" y="287.5" text-anchor="middle" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="14" fill="#eef1ff">C2</text>
+<text x="585.0" y="307.5" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#7b88b0">group: stock-svc</text><line x1="105" y1="190" x2="325" y2="255" stroke="#a98bff" stroke-width="2" marker-end="url(#ar)"/><line x1="225" y1="190" x2="325" y2="255" stroke="#a98bff" stroke-width="2" marker-end="url(#ar)"/><line x1="345" y1="190" x2="585" y2="255" stroke="#a98bff" stroke-width="2" marker-end="url(#ar)"/><line x1="465" y1="190" x2="585" y2="255" stroke="#a98bff" stroke-width="2" marker-end="url(#ar)"/><text x="60" y="352" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="12" fill="#7b88b0">消费者数量 &gt; 分区数时，多出来的消费者会空转 —— 加机器不总是能提速</text></svg>

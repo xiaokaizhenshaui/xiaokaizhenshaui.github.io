@@ -1,0 +1,64 @@
+# ============================================================
+# cyber-otaku theme config
+# 赛博终端 × 二次元 / 设计 token 见 source/assets/css/style.css
+# ============================================================
+menu:
+  首页: /
+  归档: /archives/
+  分类: /categories/
+  标签: /tags/
+  关于: /about/
+  友链: /links/
+
+favicon: /images/favicon.svg
+avatar: /images/avatar.webp
+mascot: /images/mascot.webp
+og_image: /images/og-cover.jpg
+
+hero:
+  prompt: 'youngCerulean@cerulean-deer:~$'
+  typed:
+    - 'cat ./README.md'
+    - 'git log --oneline --since="2021-01"'
+    - 'tail -f /var/log/learning.log'
+    - 'grep -r "踩坑" ./source/_posts'
+  tagline: '把踩过的坑写下来，免得下次再踩一遍。'
+  status: 'STATUS: ONLINE / 摸鱼中'
+
+social:
+  - name: GitHub
+    badge: GH
+    url: https://github.com/xiaokaizhenshaui
+  - name: RSS
+    badge: RSS
+    url: /atom.xml
+  - name: 归档
+    badge: LOG
+    url: /archives/
+
+sidebar:
+  show_toc: true
+  show_recent: true
+  recent_count: 5
+  show_status: true
+
+post:
+  copyright: '转载请注明出处，代码随便抄。'
+  reward: false
+  toc: true
+  toc_depth: 3
+
+# 夜之城特效层。全部开关都能在页面右下角 FX 面板里单独关掉。
+effects:
+  enabled: true
+  particles: 60
+  city_image: /images/hero-city.webp
+  hub: /images/hub.svg
+  agent_count: 18
+  agent_pace: 0.9
+  agent_accent: '#45e0f5'
+
+footer:
+  since: 2021
+  icp: ''
+  line: 'Built with Hexo / 手写主题 / 没有第三方统计脚本'

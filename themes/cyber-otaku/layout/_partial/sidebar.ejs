@@ -1,0 +1,76 @@
+<%
+var allPosts = site.posts.sort('-date').toArray();
+var postCount = allPosts.length;
+var charCount = allPosts.reduce(function (n, p) {
+  return n + String(p.content || '').replace(/<[^>]*>/g, '').replace(/\s/g, '').length;
+}, 0);
+var lastPost = allPosts[0];
+var tagList = site.tags.toArray().sort(function (a, b) { return b.length - a.length; }).slice(0, 18);
+var catList = site.categories.toArray().sort(function (a, b) { return b.length - a.length; });
+var isPostPage = page.layout === 'post';
+%>
+<aside class="sidebar" id="sidebar" aria-label="侧边栏">
+  <section class="panel profile-panel">
+    <div class="panel-label">// profile.json</div>
+    <div class="profile-head">
+      <img class="avatar" src="<%- url_for(theme.avatar) %>" alt="<%- config.author %> 的头像" width="72" height="72" loading="lazy">
+      <div class="profile-meta">
+        <strong class="profile-name"><%- config.author %></strong>
+        <span class="profile-role">后端 / 半吊子全栈</span>
+        <span class="online"><i></i> ONLINE</span>
+      </div>
+    </div>
+    <p class="profile-bio">写 Java，也写点 TypeScript。喜欢把工具拆开看内部怎么转，讨厌「按文档配置即可」。</p>
+    <div class="social-row">
+      <% theme.social.forEach(function (s) { %>
+        <a class="social-chip" href="<%- url_for(s.url) %>" <%- s.url.indexOf('http') === 0 ? 'target="_blank" rel="noopener"' : '' %>><span class="social-badge"><%- s.badge %></span><%- s.name %></a>
+      <% }); %>
+    </div>
+  </section>
+
+  <% if (theme.sidebar.show_status) { %>
+  <section class="panel status-panel">
+    <div class="panel-label">// site.stats</div>
+    <div class="stat-grid">
+      <div class="stat"><span class="stat-num"><%- postCount %></span><span class="stat-key">POSTS</span></div>
+      <div class="stat"><span class="stat-num"><%- (charCount / 10000).toFixed(1) %>w</span><span class="stat-key">CHARS</span></div>
+      <div class="stat"><span class="stat-num"><%- catList.length %></span><span class="stat-key">SERIES</span></div>
+      <div class="stat"><span class="stat-num"><%- tagList.length %>+</span><span class="stat-key">TAGS</span></div>
+    </div>
+    <div class="status-line"><span class="prompt">$</span> last commit</div>
+    <div class="status-value"><%- lastPost ? date(lastPost.date, 'YYYY-MM-DD') : '--' %> <span class="dim">·</span> <%- lastPost ? lastPost.title : '' %></div>
+  </section>
+  <% } %>
+
+  <% if (isPostPage && theme.sidebar.show_toc && theme.post.toc) { %>
+  <section class="panel toc-panel" id="toc-panel">
+    <div class="panel-label">// table.of.contents</div>
+    <div class="toc-body"><%- toc(page.content, { list_number: false, max_depth: theme.post.toc_depth, class: 'toc' }) %></div>
+  </section>
+  <% } %>
+
+  <% if (theme.sidebar.show_recent) { %>
+  <section class="panel recent-panel">
+    <div class="panel-label">// recent.log</div>
+    <ul class="recent-list">
+      <% allPosts.slice(0, theme.sidebar.recent_count).forEach(function (p) { %>
+        <li><a href="<%- url_for(p.path) %>"><span class="recent-date"><%- date(p.date, 'MM-DD') %></span><span class="recent-title"><%- p.title %></span></a></li>
+      <% }); %>
+    </ul>
+  </section>
+  <% } %>
+
+  <section class="panel tagcloud-panel">
+    <div class="panel-label">// tags.json</div>
+    <div class="tag-cloud">
+      <% tagList.forEach(function (t) { %>
+        <a class="cloud-tag" href="<%- url_for(t.path) %>">#<%- t.name %><sup><%- t.length %></sup></a>
+      <% }); %>
+    </div>
+  </section>
+
+  <div class="mascot-box">
+    <img src="<%- url_for(theme.mascot) %>" alt="戴耳机的少年技术宅立绘" loading="lazy">
+    <span class="mascot-bubble">今天也别把生产搞挂了 ≧▽≦</span>
+  </div>
+</aside>

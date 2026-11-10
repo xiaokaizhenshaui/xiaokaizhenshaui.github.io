@@ -1,0 +1,23 @@
+<%
+var cats = site.categories.toArray().sort(function (a, b) { return b.length - a.length; });
+%>
+<div class="list-page">
+  <div class="page-head terminal-window compact">
+    <div class="window-bar"><span class="win-dots"><i class="d-red"></i><i class="d-yellow"></i><i class="d-green"></i></span><span class="window-title">tree ./categories</span></div>
+    <div class="page-head-body">
+      <div class="hero-cmd"><span class="prompt">$</span> tree -d ./categories</div>
+      <h1>分类 <span class="dim">/ series</span></h1>
+      <p class="page-subtitle"><%- cats.length %> 个系列。</p>
+    </div>
+  </div>
+  <div class="category-cards">
+    <% cats.forEach(function (c) { %>
+      <a class="category-card" href="<%- url_for(c.path) %>">
+        <span class="category-glyph">▸</span>
+        <span class="category-name"><%- c.name %></span>
+        <span class="category-count"><%- c.length %> 篇</span>
+        <span class="category-path">/categories/<%- c.slug %>/</span>
+      </a>
+    <% }); %>
+  </div>
+</div>

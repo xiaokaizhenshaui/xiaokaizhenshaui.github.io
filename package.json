@@ -1,0 +1,27 @@
+{
+  "name": "cerulean-deer-blog",
+  "version": "1.0.0",
+  "private": true,
+  "hexo": {
+    "version": "7.3.0"
+  },
+  "description": "Cerulean Deer - cyber terminal x otaku tech blog",
+  "scripts": {
+    "build": "hexo generate",
+    "clean": "hexo clean",
+    "server": "hexo server -p 4000",
+    "new": "hexo new"
+  },
+  "dependencies": {
+    "hexo": "^7.3.0",
+    "hexo-generator-archive": "^2.0.0",
+    "hexo-generator-category": "^2.0.0",
+    "hexo-generator-index": "^4.0.0",
+    "hexo-generator-tag": "^2.0.0",
+    "hexo-renderer-ejs": "^2.0.0",
+    "hexo-renderer-marked": "^7.0.1"
+  },
+  "devDependencies": {
+    "hexo-cli": "^4.3.2"
+  }
+}

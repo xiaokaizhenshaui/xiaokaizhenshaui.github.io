@@ -1,0 +1,16 @@
+<div class="list-page">
+  <div class="page-head terminal-window compact">
+    <div class="window-bar"><span class="win-dots"><i class="d-red"></i><i class="d-yellow"></i><i class="d-green"></i></span><span class="window-title">ls ./<%- page.category %></span></div>
+    <div class="page-head-body">
+      <div class="hero-cmd"><span class="prompt">$</span> ls -1 ./categories/<%- page.category_slug || page.category %></div>
+      <h1><%- page.category %></h1>
+      <p class="page-subtitle"><%- page.posts.length %> 篇 · 一个系列</p>
+    </div>
+  </div>
+  <div class="post-grid">
+    <% page.posts.sort('-date').toArray().forEach(function (p) { %>
+      <%- partial('_partial/post-card', { p: p }) %>
+    <% }); %>
+  </div>
+  <%- partial('_partial/pagination') %>
+</div>

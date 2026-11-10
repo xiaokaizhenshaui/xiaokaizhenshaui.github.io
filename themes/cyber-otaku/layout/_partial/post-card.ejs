@@ -1,0 +1,40 @@
+<%
+function stripAll(s) {
+  return String(s || '').replace(/<[^>]*>/g, ' ').replace(/&[a-z]+;/gi, ' ').replace(/\s+/g, ' ').trim();
+}
+var cats = p.categories ? p.categories.toArray() : [];
+var tags = p.tags ? p.tags.toArray() : [];
+var catName = cats.length ? cats[cats.length - 1].name : '未分类';
+var catSlug = cats.length ? cats[cats.length - 1].slug : 'misc';
+var summary = stripAll(p.description || p.excerpt || p.content).slice(0, 108);
+var cover = p.cover || '';
+var isReport = (p.title || '').indexOf('月报') > -1 || (p.title || '').indexOf('月度') > -1;
+%>
+<article class="post-card <%- isReport ? 'is-report' : '' %>">
+  <a class="card-cover" href="<%- url_for(p.path) %>" aria-label="<%- p.title %>" tabindex="-1">
+    <% if (cover) { %>
+      <img src="<%- url_for(cover) %>" alt="" loading="lazy">
+    <% } else { %>
+      <div class="cover-fallback cover-<%- catSlug.replace(/[^a-z0-9-]/gi, '') %>" aria-hidden="true">
+        <span class="cover-glyph"><%- isReport ? '▤' : '⌘' %></span>
+        <span class="cover-code">~/posts/<%- catSlug %>/<%- date(p.date, 'YYYYMMDD') %>.md</span>
+      </div>
+    <% } %>
+    <span class="cover-cat"># <%- catName %></span>
+  </a>
+  <div class="card-body">
+    <div class="card-meta">
+      <time datetime="<%- date_xml(p.date) %>"><%- date(p.date, 'YYYY-MM-DD') %></time>
+      <span class="meta-dot">·</span>
+      <span><%- stripAll(p.content).replace(/\s/g, '').length %> 字</span>
+      <% if (isReport) { %><span class="meta-dot">·</span><span class="report-badge">MONTHLY</span><% } %>
+    </div>
+    <h2 class="card-title"><a href="<%- url_for(p.path) %>"><span class="title-prompt">&gt;</span> <%- p.title %></a></h2>
+    <p class="card-summary"><%- summary %>…</p>
+    <div class="card-tags">
+      <% tags.slice(0, 4).forEach(function (t) { %>
+        <a href="<%- url_for(t.path) %>">#<%- t.name %></a>
+      <% }); %>
+    </div>
+  </div>
+</article>

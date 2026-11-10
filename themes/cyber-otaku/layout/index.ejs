@@ -1,0 +1,67 @@
+<%
+var series = [
+  { slug: 'java',       name: 'Java 开发',  glyph: '☕', desc: 'JDK / JVM / Spring / 并发', color: 'c-java' },
+  { slug: 'fullstack',  name: '全栈开发',  glyph: '⌘', desc: 'TS / GraphQL / 前后端联调', color: 'c-fullstack' },
+  { slug: 'middleware', name: '中间件',    glyph: '⛁', desc: 'Kafka / Redis / MySQL / Docker', color: 'c-middleware' },
+  { slug: 'ai-tools',   name: 'AI 工具',   glyph: '✦', desc: '编码助手横评 / 上下文工程', color: 'c-ai' },
+  { slug: 'llm',        name: '大模型',    glyph: '◉', desc: 'RAG / Agent / MCP / 推理成本', color: 'c-llm' },
+  { slug: 'monthly',    name: '月度报告',  glyph: '▤', desc: '这个月干了啥、踩了啥', color: 'c-monthly' }
+];
+var posts = page.posts.toArray();
+%>
+<script>window.__HERO_LINES__ = <%- JSON.stringify(theme.hero.typed) %>;</script>
+
+<section class="hero">
+  <div class="hero-city-backdrop" aria-hidden="true"></div>
+  <div class="terminal-window hero-window">
+    <div class="window-bar">
+      <span class="win-dots"><i class="d-red"></i><i class="d-yellow"></i><i class="d-green"></i></span>
+      <span class="window-title">bash — ~/cerulean-deer</span>
+      <span class="window-status"><%- theme.hero.status %></span>
+    </div>
+    <div class="hero-body">
+      <div class="hero-cmd"><span class="prompt"><%- theme.hero.prompt %></span> <span id="hero-typed">cat ./README.md</span><span class="caret">▋</span></div>
+      <h1 class="hero-title" data-glitch>代码要能跑，<span class="hl">坑要写下来</span>。</h1>
+      <p class="hero-tagline"><%- theme.hero.tagline %></p>
+      <div class="hero-badges">
+        <span class="badge">Java / Spring Boot</span>
+        <span class="badge">TypeScript / GraphQL</span>
+        <span class="badge">Kafka / Redis</span>
+        <span class="badge">LLM / AI 工具</span>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="<%- url_for('/archives/') %>">$ ls ./posts <span>→</span></a>
+        <a class="btn btn-ghost" href="<%- url_for('/about/') %>">$ whoami</a>
+        <button class="btn btn-ghost" id="fx-rebuild-trigger" type="button" hidden title="让一群 agent 把页面重新搭一遍">$ rebuild --agents</button>
+      </div>
+    </div>
+  </div>
+  <div class="hero-mascot-wrap">
+    <img class="hero-mascot" src="<%- url_for(theme.mascot) %>" alt="戴耳机的少年技术宅立绘" loading="lazy">
+    <span class="mascot-speech">本周的新文章同步完了，别的先别管 (｀・ω・´)</span>
+  </div>
+</section>
+
+<section class="series-section" aria-label="文章系列">
+  <div class="section-head"><span class="section-tag">// 01</span><h2>按系列翻</h2><span class="section-line"></span></div>
+  <div class="series-grid">
+    <% series.forEach(function (s) { %>
+      <a class="series-card <%- s.color %>" href="<%- url_for('/categories/' + s.slug + '/') %>">
+        <span class="series-glyph"><%- s.glyph %></span>
+        <span class="series-name"><%- s.name %></span>
+        <span class="series-desc"><%- s.desc %></span>
+        <span class="series-arrow">↗</span>
+      </a>
+    <% }); %>
+  </div>
+</section>
+
+<section class="feed-section" aria-label="最新文章">
+  <div class="section-head"><span class="section-tag">// 02</span><h2>最近写的</h2><span class="section-line"></span><span class="section-count"><%- site.posts.length %> posts total</span></div>
+  <div class="post-grid">
+    <% posts.forEach(function (p) { %>
+      <%- partial('_partial/post-card', { p: p }) %>
+    <% }); %>
+  </div>
+  <%- partial('_partial/pagination') %>
+</section>

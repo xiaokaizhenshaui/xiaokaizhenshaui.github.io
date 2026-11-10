@@ -1,0 +1,18 @@
+<%
+var tags = site.tags.toArray().sort(function (a, b) { return b.length - a.length; });
+%>
+<div class="list-page">
+  <div class="page-head terminal-window compact">
+    <div class="window-bar"><span class="win-dots"><i class="d-red"></i><i class="d-yellow"></i><i class="d-green"></i></span><span class="window-title">tags.json</span></div>
+    <div class="page-head-body">
+      <div class="hero-cmd"><span class="prompt">$</span> jq 'keys' ./tags.json</div>
+      <h1>标签 <span class="dim">/ tags</span></h1>
+      <p class="page-subtitle"><%- tags.length %> 个标签，按出现次数排。</p>
+    </div>
+  </div>
+  <div class="all-tags">
+    <% tags.forEach(function (t) { %>
+      <a class="all-tag" href="<%- url_for(t.path) %>"><span>#<%- t.name %></span><sup><%- t.length %></sup></a>
+    <% }); %>
+  </div>
+</div>

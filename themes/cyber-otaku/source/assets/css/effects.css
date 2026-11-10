@@ -1,0 +1,276 @@
+/* ============================================================
+   Cerulean Deer / Night City FX
+   夜之城特效层：粒子、扫描线、霓虹光晕、glitch、进场、看板娘与控制台
+   依赖：style.css 的 design tokens；agent-build.min.css 的 @layer 样式
+   全部特效可用右下角 FX 面板关掉，且尊重 prefers-reduced-motion
+   ============================================================ */
+
+/* 库脚本移除 hidden 之前，任何带 hidden 的控件都不许露脸 */
+[hidden] { display: none !important; }
+
+:root {
+  /* agent-build 读取这两个变量给按钮和重建动画上色 */
+  --agent-accent: #45e0f5;
+  --agent-mono: var(--font-mono);
+  --fx-cyan: rgba(69, 224, 245, .55);
+  --fx-pink: rgba(255, 119, 200, .5);
+}
+
+/* ---------- 夜之城远景：压在最底层，只做氛围 ---------- */
+.fx-city {
+  position: fixed; inset: 0; z-index: -2;
+  pointer-events: none;
+  background: url('/images/hero-city.webp') center 38% / cover no-repeat;
+  opacity: .16;
+  mix-blend-mode: screen;
+  animation: fx-city-drift 90s ease-in-out infinite alternate;
+}
+body.fx-city-off .fx-city { opacity: 0; animation: none; }
+
+@keyframes fx-city-drift {
+  from { background-position: center 38%; transform: scale(1.02); }
+  to   { background-position: 54% 44%; transform: scale(1.07); }
+}
+
+/* 首页 hero 里的近景城市，比全屏氛围图清晰一档 */
+.hero-city-backdrop {
+  position: absolute; inset: 0; z-index: 0;
+  pointer-events: none;
+  border-radius: var(--r-md);
+  background: url('/images/hero-city.webp') center 42% / cover no-repeat;
+  opacity: .3;
+  mask-image: linear-gradient(100deg, rgba(0,0,0,.15) 0%, rgba(0,0,0,.85) 55%, rgba(0,0,0,.4) 100%);
+}
+body.fx-city-off .hero-city-backdrop { opacity: 0; }
+.hero-window, .hero-mascot-wrap { position: relative; z-index: 1; }
+
+/* ---------- 覆盖层：粒子 / 扫描线 / 暗角 / 光晕 ---------- */
+.fx-layer {
+  position: fixed; inset: 0; z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+.fx-particles { position: absolute; inset: 0; width: 100%; height: 100%; }
+body.fx-particles-off .fx-particles { display: none; }
+
+.fx-scanlines {
+  position: absolute; inset: -10% 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(180, 230, 255, .05) 0 1px,
+    transparent 1px 4px
+  );
+  opacity: .5;
+  animation: fx-scan 9s linear infinite, fx-flicker 7s steps(1, end) infinite;
+}
+body.fx-scan-off .fx-scanlines { display: none; }
+
+.fx-vignette {
+  position: absolute; inset: 0;
+  background: radial-gradient(120% 90% at 50% 45%, transparent 55%, rgba(3, 5, 14, .5) 100%);
+}
+@keyframes fx-scan { from { transform: translateY(-3%); } to { transform: translateY(3%); } }
+@keyframes fx-flicker {
+  0%, 96%, 100% { opacity: .5; }
+  97% { opacity: .32; }
+  98% { opacity: .62; }
+}
+
+.fx-cursor-glow {
+  position: absolute; top: 0; left: 0;
+  width: 320px; height: 320px; margin: -160px 0 0 -160px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(69,224,245,.1) 0%, rgba(169,139,255,.05) 45%, transparent 70%);
+  opacity: 0;
+  transform: translate3d(var(--fx-mx, -400px), var(--fx-my, -400px), 0);
+  transition: opacity .5s ease;
+  will-change: transform;
+}
+.fx-cursor-glow.is-on { opacity: 1; }
+body.fx-glow-off .fx-cursor-glow { display: none; }
+
+/* agent-build 运行期间把自家浮层收起来，别跟它的选择框打架 */
+body.agent-running .fx-layer,
+body.agent-running .fx-dock,
+body.agent-running .fx-waifu,
+body.agent-running .fx-city { opacity: 0; visibility: hidden; }
+
+/* ---------- glitch 文字 ---------- */
+.brand-text { position: relative; display: inline-block; }
+.brand-text::before, .brand-text::after {
+  content: attr(data-glitch);
+  position: absolute; left: 0; top: 0;
+  white-space: nowrap; pointer-events: none;
+  opacity: 0;
+}
+.brand-text::before { color: var(--accent); }
+.brand-text::after  { color: var(--accent-2); }
+.brand-text.is-glitching::before { animation: fx-glitch-a .38s steps(2, end) 2; }
+.brand-text.is-glitching::after  { animation: fx-glitch-b .38s steps(2, end) 2; }
+
+@keyframes fx-glitch-a {
+  0%   { opacity: .85; clip-path: inset(6% 0 72% 0); transform: translate(-3px, -1px); }
+  35%  { opacity: .85; clip-path: inset(58% 0 18% 0); transform: translate(3px, 1px); }
+  70%  { opacity: .8;  clip-path: inset(30% 0 48% 0); transform: translate(-2px, 0); }
+  100% { opacity: 0; }
+}
+@keyframes fx-glitch-b {
+  0%   { opacity: .8;  clip-path: inset(68% 0 8% 0);  transform: translate(3px, 1px); }
+  40%  { opacity: .8;  clip-path: inset(14% 0 66% 0); transform: translate(-3px, -1px); }
+  75%  { opacity: .75; clip-path: inset(44% 0 34% 0); transform: translate(2px, 0); }
+  100% { opacity: 0; }
+}
+
+.hero-title.is-glitching { animation: fx-title-jitter .32s steps(2, end) 2; }
+@keyframes fx-title-jitter {
+  0%, 100% { text-shadow: none; transform: none; }
+  25% { text-shadow: -2px 0 var(--accent-2), 2px 0 var(--accent); transform: translateX(1px); }
+  60% { text-shadow: 2px 0 var(--accent-2), -2px 0 var(--accent); transform: translateX(-1px); }
+}
+
+/* ---------- 进场动画（JS 先加 is-ready，不会在脚本失效时藏住内容） ---------- */
+.fx-reveal { transition: opacity .55s ease, transform .55s cubic-bezier(.2,.8,.2,1); }
+.fx-reveal.is-ready { opacity: 0; transform: translateY(16px); }
+.fx-reveal.is-ready.is-in { opacity: 1; transform: none; }
+
+/* ---------- 卡片 3D 倾斜 + 霓虹描边 ---------- */
+.post-card[data-fx-tilt] {
+  transform: perspective(900px) rotateX(var(--fx-rx, 0deg)) rotateY(var(--fx-ry, 0deg)) translateY(-2px);
+  transition: transform 120ms ease, border-color var(--t-base), box-shadow var(--t-base);
+  border-color: rgba(69, 224, 245, .48);
+  box-shadow: 0 0 0 1px rgba(69,224,245,.14), 0 10px 34px rgba(0,0,0,.45), 0 0 26px rgba(69,224,245,.1);
+}
+.series-card[data-fx-tilt] {
+  transform: perspective(800px) rotateX(var(--fx-rx, 0deg)) rotateY(var(--fx-ry, 0deg));
+  box-shadow: var(--glow-cyan);
+}
+
+/* ---------- 看板娘浮窗（白毛少女） ---------- */
+.fx-waifu {
+  position: fixed; right: 22px; bottom: 92px; z-index: 90;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
+  transition: opacity var(--t-base), visibility var(--t-base);
+}
+body.fx-waifu-off .fx-waifu { opacity: 0; visibility: hidden; pointer-events: none; }
+.fx-waifu-face {
+  position: relative;
+  width: 64px; height: 64px; padding: 0;
+  border: 2px solid var(--accent); border-radius: 50%;
+  background: var(--bg-inset);
+  box-shadow: 0 0 0 4px rgba(11,14,26,.8), 0 0 24px rgba(69,224,245,.32);
+  overflow: hidden;
+  animation: fx-float 4.5s ease-in-out infinite;
+}
+.fx-waifu-face img { width: 100%; height: 100%; object-fit: cover; }
+.fx-waifu-face:hover { border-color: var(--accent-2); box-shadow: 0 0 0 4px rgba(11,14,26,.8), 0 0 28px rgba(255,119,200,.45); }
+.fx-waifu-online {
+  position: absolute; right: 3px; bottom: 4px;
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--accent-4); border: 2px solid var(--bg-inset);
+  box-shadow: 0 0 8px var(--accent-4);
+}
+@keyframes fx-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+
+.fx-waifu-bubble {
+  max-width: 230px; padding: 8px 12px;
+  font-size: var(--fs-xs); line-height: 1.6;
+  color: var(--text-1); background: var(--bg-elevated);
+  border: 1px solid var(--accent-2); border-radius: var(--r-md) var(--r-md) 2px var(--r-md);
+  box-shadow: var(--glow-pink);
+  opacity: 0; transform: translateY(6px) scale(.96);
+  transition: opacity var(--t-base), transform var(--t-base);
+  pointer-events: none;
+}
+.fx-waifu-bubble.is-on { opacity: 1; transform: none; }
+
+/* ---------- 特效控制台 ---------- */
+.fx-dock {
+  position: fixed; right: 22px; bottom: 22px; z-index: 91;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
+  font-family: var(--font-mono);
+}
+.fx-dock-toggle {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 7px 12px;
+  font: var(--fs-xs) var(--font-mono); letter-spacing: .08em;
+  color: var(--accent); background: rgba(13,17,32,.92);
+  border: 1px solid var(--border-strong); border-radius: var(--r-pill);
+  box-shadow: var(--shadow-1);
+  backdrop-filter: blur(6px);
+}
+.fx-dock-toggle:hover { color: var(--bg-base); background: var(--accent); border-color: var(--accent); box-shadow: var(--glow-cyan); }
+.fx-dock-icon { font-size: 14px; }
+.fx-dock-toggle[aria-expanded="true"] .fx-dock-icon { animation: fx-spin 1.6s linear infinite; display: inline-block; }
+@keyframes fx-spin { to { transform: rotate(360deg); } }
+
+.fx-dock-panel {
+  width: 246px; padding: var(--sp-3);
+  background: rgba(13, 17, 32, .96);
+  border: 1px solid var(--border-strong); border-radius: var(--r-md);
+  box-shadow: var(--shadow-2), 0 0 30px rgba(69,224,245,.1);
+  backdrop-filter: blur(10px);
+}
+.fx-dock-panel[hidden] { display: none; }
+.fx-dock-head {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-bottom: var(--sp-2); margin-bottom: var(--sp-3);
+  border-bottom: 1px dashed var(--border);
+  font-size: var(--fs-xs); color: var(--accent);
+}
+.fx-dock-sys { color: var(--accent-2); letter-spacing: .1em; }
+
+/* agent-build 的触发按钮：库会自动写入 dots 和 label */
+[data-agent-build][hidden] { display: none !important; }
+.fx-build-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; min-height: 38px; margin-bottom: var(--sp-3); padding: 7px 10px;
+  font: var(--fs-xs) var(--font-mono);
+  color: var(--bg-base); background: var(--accent);
+  border: 1px solid var(--accent); border-radius: var(--r-sm);
+  box-shadow: var(--glow-cyan);
+  transition: all var(--t-base);
+}
+.fx-build-btn:hover { background: var(--accent-2); border-color: var(--accent-2); box-shadow: var(--glow-pink); transform: translateY(-1px); }
+.fx-build-btn .agent-build-label { font: inherit; color: inherit; }
+.fx-build-btn .agent-build-dots { opacity: .95; }
+.fx-build-btn .agent-build-dots i { border-color: rgba(9, 13, 25, .8); }
+
+.fx-switches { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; margin-bottom: var(--sp-3); }
+.fx-switches label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: var(--fs-xs); color: var(--text-2); cursor: pointer;
+  user-select: none;
+}
+.fx-switches input { appearance: none; width: 13px; height: 13px; margin: 0; flex: none;
+  border: 1px solid var(--border-strong); border-radius: 3px; background: var(--bg-inset); }
+.fx-switches input:checked { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 8px rgba(69,224,245,.5); }
+.fx-switches label:hover { color: var(--accent); }
+
+.fx-hud {
+  display: flex; align-items: center; gap: 7px;
+  padding-top: var(--sp-2); border-top: 1px dashed var(--border);
+  font-size: var(--fs-xs); color: var(--text-3); letter-spacing: .05em;
+}
+.fx-hud-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-4); box-shadow: 0 0 8px var(--accent-4); }
+.fx-hud.is-busy .fx-hud-dot { background: var(--accent-2); box-shadow: 0 0 8px var(--accent-2); animation: fx-blink .7s steps(1,end) infinite; }
+.fx-hud-sep { opacity: .5; }
+@keyframes fx-blink { 50% { opacity: .2; } }
+.fx-dock-tip { margin: var(--sp-2) 0 0; font-size: 10px; color: var(--text-3); opacity: .75; line-height: 1.5; }
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 720px) {
+  .fx-waifu { display: none; }
+  .fx-dock { right: 12px; bottom: 12px; }
+  .fx-dock-panel { width: 220px; }
+  .fx-cursor-glow { display: none; }
+  .fx-city { background-position: center; }
+}
+
+/* ---------- 无障碍：减少动态效果时全部收声 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .fx-city, .fx-scanlines, .fx-waifu-face, .fx-dock-toggle[aria-expanded="true"] .fx-dock-icon { animation: none !important; }
+  .brand-text::before, .brand-text::after { animation: none !important; opacity: 0 !important; }
+  .hero-title.is-glitching { animation: none !important; }
+  .fx-reveal, .fx-reveal.is-ready { transition: none !important; opacity: 1 !important; transform: none !important; }
+  .fx-cursor-glow { display: none; }
+}

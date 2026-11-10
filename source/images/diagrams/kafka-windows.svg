@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 360" role="img" aria-label="Windows 本地起 Kafka 的顺序">
+<defs>
+<pattern id="g" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M24 0H0V24" fill="none" stroke="#1e2740" stroke-width="1"/></pattern>
+<marker id="ar" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0 0 L8 3 L0 6 z" fill="#a98bff"/></marker>
+</defs>
+<rect width="880" height="360" fill="#0d1120"/>
+<rect width="880" height="360" fill="url(#g)"/>
+<rect x="12" y="12" width="856" height="336" rx="10" fill="none" stroke="#2a3352" stroke-width="1.5"/>
+<text x="30" y="42" font-family="ui-monospace,Menlo,monospace" font-size="13" fill="#45e0f5">FIG // Windows 本地起 Kafka 的顺序</text>
+<text x="30" y="63" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="12" fill="#7b88b0">原 6 张安装截图已失效，改成流程图；命令仍按原步骤</text>
+<line x1="30" y1="76" x2="850" y2="76" stroke="#2a3352" stroke-width="1"/>
+<rect x="40" y="140" width="185" height="90" rx="8" fill="#121728" stroke="#45e0f5" stroke-width="1.6"/>
+<text x="132.5" y="185.0" text-anchor="middle" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="13" fill="#eef1ff">1  zookeeper</text>
+<text x="132.5" y="205.0" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#7b88b0">zookeeper-server-start</text><line x1="225" y1="185" x2="250" y2="185" stroke="#a98bff" stroke-width="2" marker-end="url(#ar)"/><rect x="250" y="140" width="185" height="90" rx="8" fill="#121728" stroke="#a98bff" stroke-width="1.6"/>
+<text x="342.5" y="185.0" text-anchor="middle" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="13" fill="#eef1ff">2  kafka</text>
+<text x="342.5" y="205.0" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#7b88b0">kafka-server-start</text><line x1="435" y1="185" x2="460" y2="185" stroke="#a98bff" stroke-width="2" marker-end="url(#ar)"/><rect x="460" y="140" width="185" height="90" rx="8" fill="#121728" stroke="#9ce884" stroke-width="1.6"/>
+<text x="552.5" y="185.0" text-anchor="middle" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="13" fill="#eef1ff">3  kafka</text>
+<text x="552.5" y="205.0" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#7b88b0">kafka-topics --create</text><line x1="645" y1="185" x2="670" y2="185" stroke="#a98bff" stroke-width="2" marker-end="url(#ar)"/><rect x="670" y="140" width="185" height="90" rx="8" fill="#121728" stroke="#ff77c8" stroke-width="1.6"/>
+<text x="762.5" y="185.0" text-anchor="middle" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="13" fill="#eef1ff">4  producer / consumer</text>
+<text x="762.5" y="205.0" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#7b88b0">producer / consumer</text><text x="40" y="290" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="12" fill="#7b88b0">每一步都要单独开一个 cmd 窗口，关掉窗口就等于把服务杀了</text><text x="40" y="320" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="12" fill="#7b88b0">2026 补记：现在直接用 KRaft 模式或 Docker Compose，不用再单独起 ZooKeeper</text></svg>

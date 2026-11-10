@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <%- partial('_partial/head') %>
+</head>
+<body data-layout="<%- page.layout || 'page' %>">
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-glow" aria-hidden="true"></div>
+
+  <%- partial('_partial/header') %>
+
+  <div class="wrap layout" id="layout">
+    <main class="main-col" id="main-content">
+      <%- body %>
+    </main>
+    <%- partial('_partial/sidebar') %>
+  </div>
+
+  <%- partial('_partial/footer') %>
+  <%- partial('_partial/search-panel') %>
+  <%- partial('_partial/effects') %>
+  <script src="<%- url_for('/vendor/agent-build.min.js') %>" defer></script>
+  <script src="<%- url_for('/assets/js/effects.js') %>" defer></script>
+  <script src="<%- url_for('/assets/js/main.js') %>" defer></script>
+</body>
+</html>

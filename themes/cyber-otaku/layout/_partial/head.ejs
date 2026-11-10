@@ -1,0 +1,35 @@
+<%
+function plain(s) {
+  return String(s || '').replace(/<[^>]*>/g, ' ').replace(/&[a-z]+;/gi, ' ').replace(/\s+/g, ' ').trim();
+}
+var pTitle = page.title ? (page.title + ' | ' + config.title) : (config.title + ' · ' + config.subtitle);
+var pDesc  = plain(page.description || page.excerpt || config.description).slice(0, 160);
+var pUrl   = config.url.replace(/\/$/, '') + url_for(page.path || '');
+var pImage = page.cover || (config.url.replace(/\/$/, '') + (theme.og_image || '/images/og-cover.png'));
+var isPost = !!page.layout && page.layout === 'post';
+%>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title><%- pTitle %></title>
+<meta name="description" content="<%- pDesc %>">
+<meta name="author" content="<%- config.author %>">
+<meta name="keywords" content="<%- isPost && page.tags ? page.tags.toArray().map(function(t){return t.name}).join(',') : config.keywords %>">
+<meta name="theme-color" content="#0b0e1a">
+<link rel="canonical" href="<%- pUrl %>">
+<link rel="alternate" type="application/atom+xml" title="<%- config.title %>" href="<%- url_for('/atom.xml') %>">
+<link rel="icon" href="<%- url_for(theme.favicon) %>">
+<link rel="preload" as="image" href="<%- url_for(theme.avatar) %>">
+
+<meta property="og:type" content="<%- isPost ? 'article' : 'website' %>">
+<meta property="og:title" content="<%- pTitle %>">
+<meta property="og:description" content="<%- pDesc %>">
+<meta property="og:url" content="<%- pUrl %>">
+<meta property="og:image" content="<%- pImage %>">
+<meta property="og:site_name" content="<%- config.title %>">
+<meta property="og:locale" content="zh_CN">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="stylesheet" href="<%- url_for('/assets/css/style.css') %>">
+<link rel="stylesheet" href="<%- url_for('/vendor/agent-build.min.css') %>">
+<link rel="stylesheet" href="<%- url_for('/assets/css/effects.css') %>">

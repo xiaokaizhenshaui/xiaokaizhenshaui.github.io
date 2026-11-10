@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 380" role="img" aria-label="Elasticsearch 倒排索引">
+<defs>
+<pattern id="g" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M24 0H0V24" fill="none" stroke="#1e2740" stroke-width="1"/></pattern>
+<marker id="ar" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0 0 L8 3 L0 6 z" fill="#a98bff"/></marker>
+</defs>
+<rect width="880" height="380" fill="#0d1120"/>
+<rect width="880" height="380" fill="url(#g)"/>
+<rect x="12" y="12" width="856" height="356" rx="10" fill="none" stroke="#2a3352" stroke-width="1.5"/>
+<text x="30" y="42" font-family="ui-monospace,Menlo,monospace" font-size="13" fill="#45e0f5">FIG // Elasticsearch 倒排索引</text>
+<text x="30" y="63" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="12" fill="#7b88b0">写入时分词建索引，查询时合并 posting list</text>
+<line x1="30" y1="76" x2="850" y2="76" stroke="#2a3352" stroke-width="1"/>
+<rect x="50" y="130" width="220" height="80" rx="8" fill="#121728" stroke="#45e0f5" stroke-width="1.6"/>
+<text x="160.0" y="170.0" text-anchor="middle" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="15" fill="#eef1ff">文档 doc1</text>
+<text x="160.0" y="190.0" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#7b88b0">&quot;Kafka 入门笔记&quot;</text><rect x="50" y="235" width="220" height="80" rx="8" fill="#121728" stroke="#45e0f5" stroke-width="1.6"/>
+<text x="160.0" y="275.0" text-anchor="middle" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="15" fill="#eef1ff">文档 doc2</text>
+<text x="160.0" y="295.0" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#7b88b0">&quot;Kafka 消费者组&quot;</text><rect x="360" y="120" width="200" height="200" rx="8" fill="#121728" stroke="#a98bff" stroke-width="1.6"/>
+<text x="460.0" y="220.0" text-anchor="middle" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="15" fill="#eef1ff">倒排索引</text>
+<text x="460.0" y="240.0" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#7b88b0">term → docId list</text><rect x="660" y="140" width="170" height="65" rx="8" fill="#121728" stroke="#9ce884" stroke-width="1.6"/>
+<text x="745.0" y="172.5" text-anchor="middle" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="14" fill="#eef1ff">kafka</text>
+<text x="745.0" y="192.5" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#7b88b0">[1, 2]</text><rect x="660" y="220" width="170" height="65" rx="8" fill="#121728" stroke="#9ce884" stroke-width="1.6"/>
+<text x="745.0" y="252.5" text-anchor="middle" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="14" fill="#eef1ff">消费者</text>
+<text x="745.0" y="272.5" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#7b88b0">[2]</text><line x1="270" y1="170" x2="360" y2="170" stroke="#a98bff" stroke-width="2" marker-end="url(#ar)"/>
+<text x="315.0" y="162.0" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#a98bff">analyze</text><line x1="270" y1="275" x2="360" y2="275" stroke="#a98bff" stroke-width="2" marker-end="url(#ar)"/>
+<text x="315.0" y="267.0" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#a98bff">analyze</text><line x1="560" y1="200" x2="660" y2="175" stroke="#a98bff" stroke-width="2" marker-end="url(#ar)"/><line x1="560" y1="220" x2="660" y2="250" stroke="#a98bff" stroke-width="2" marker-end="url(#ar)"/><text x="50" y="350" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="12" fill="#7b88b0">mapping 一旦建错（比如 text 该用 keyword），只能 reindex，别指望改个参数就好</text></svg>
