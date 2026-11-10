@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="280" height="64" viewBox="0 0 280 64" role="img" aria-label="查看特效演示">
+  <defs>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="2.4" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <linearGradient id="edge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#45e0f5"/>
+      <stop offset="1" stop-color="#ff77c8"/>
+    </linearGradient>
+  </defs>
+  <rect x="2.5" y="2.5" width="275" height="59" rx="12" ry="12"
+        fill="#0a0e1a" stroke="url(#edge)" stroke-width="2.5" filter="url(#glow)"/>
+  <g filter="url(#glow)" font-family="'Segoe UI', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif">
+    <text x="30" y="30" fill="#45e0f5" font-size="20" font-weight="700">&#9654;</text>
+    <text x="52" y="30" fill="#eafcff" font-size="20" font-weight="700">在线演示</text>
+    <text x="52" y="48" fill="#ff77c8" font-size="11" font-weight="600" letter-spacing="2">LIVE DEMO &#183; NIGHT CITY</text>
+  </g>
+  <circle cx="244" cy="32" r="6" fill="none" stroke="#a98bff" stroke-width="2" filter="url(#glow)"/>
+  <circle cx="244" cy="32" r="2" fill="#a98bff"/>
+</svg>
