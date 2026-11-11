@@ -7,16 +7,16 @@ tags:
   - AI 工具
   - CLI
   - 工程规范
-lead: "把 58 行 AGENTS.md 塞进仓库之后，同一个需求我从平均纠偏 5 轮降到 1 轮，一次累计 token 从 23k 掉到 9k；中间它还顺手删过一个 resolver，我用 git restore 捞回来了。"
+lead: "换了一圈模型没用，把 58 行上下文写清楚，一次就过。"
 ---
 
-2026-10-08 21:40，我让终端里的 AI CLI 给 book-shop-api 加一个 GraphQL query `booksByAuthor`。五轮下来全是纠偏：第一轮它给返回值糊了个 `any`，第二轮把 resolver 写进了 `src/schema/`，第三轮嫌类型报错直接跑了 `npm install`，把 `pnpm-lock.yaml` 改出一堆 diff，第四轮我让它「别动 lock 文件」，它老老实实不动了，却又把 SDL 改在了一个不存在的目录里。第五轮我换了另一个模型，同样的需求原样贴过去，第四轮那个错又原样犯了一遍。
+一个 `booksByAuthor` 的 query，怎么就能让我纠偏五轮？2026-10-08 21:40，我让终端里的 AI CLI 给 book-shop-api 加这个 GraphQL query，五轮下来全是纠偏：第一轮它给返回值糊了个 `any`，第二轮把 resolver 写进了 `src/schema/`，第三轮嫌类型报错直接跑了 `npm install`，把 `pnpm-lock.yaml` 改出一堆 diff，第四轮我让它「别动 lock 文件」，它老老实实不动了，却又把 SDL 改在了一个不存在的目录里。第五轮我换了另一个模型，同样的需求原样贴过去，第四轮那个错又原样犯了一遍。
 
-那天晚上我才承认这跟模型没关系。我给它的全部背景就一句「这是个 TypeScript + GraphQL 的在线书店后端，用 pnpm」，它连 `pnpm codegen` 长什么样、resolver 该放哪儿都不知道，犯的每一个错都能从这句背景里推出来。顺带一提，book-shop-api 的工具链我锁得很死：Node 20.11.1、pnpm 9.12.0、TypeScript 5.6.3，订单服务是另一个 Java 21 / Gradle 8.10 的仓库——这些我全都没告诉它。
+那天晚上我才承认这跟模型没关系。我给它的全部背景就一句「这是个 TypeScript + GraphQL 的在线书店后端，用 pnpm」，它连 `pnpm codegen` 长什么样、resolver 该放哪儿都不知道，犯的每一个错都能从这句背景里推出来。book-shop-api 的工具链我锁得很死：Node 20.11.1、pnpm 9.12.0、TypeScript 5.6.3，订单服务是另一个 Java 21 / Gradle 8.10 的仓库——这些我全都没告诉它。
 
 ## 三款终端工具，我现在怎么分工
 
-九月到现在陆陆续续装了四个，最后留下三个常开的：
+九月到现在陆陆续续装了四个，留下三个常开的：
 
 | 工具 | 读的上下文 | 我让它干 | 明令不让它干 |
 | --- | --- | --- | --- |
@@ -67,7 +67,7 @@ lead: "把 58 行 AGENTS.md 塞进仓库之后，同一个需求我从平均纠�
 - 错误码用英文常量（如 `BOOK_NOT_FOUND`），给用户看的中文文案另写一行
 ```
 
-写全之后的变化很直接：构建命令 pin 死版本，它不再自作主张装依赖；「先 SDL 再 resolver 再 codegen」写进去，加字段第一轮就对了；最后那条中英文规范是 10-09 补的——它之前把一个 query 命名成 `查询作者书籍`，还给我生成了中文的 GraphQL 描述，评审时我盯着那行看了半天才反应过来哪不对。
+写全之后的变化很直接：构建命令 pin 死版本，它不再自作主张装依赖；「先 SDL 再 resolver 再 codegen」写进去，加字段第一轮就对了；中英文那条规范是 10-09 补的——它之前把一个 query 命名成 `查询作者书籍`，还给我生成了中文的 GraphQL 描述，评审时我盯着那行看了半天才反应过来哪不对。
 
 现在这份 58 行，约 1380 tokens，每轮都带。一次需求平均 1.2 轮、累计 9k 左右，比第一版那 23k 省了六成。下面是加 `booksByAuthor` 那次我贴进复盘文档的终端记录：
 
@@ -96,7 +96,7 @@ $ git status --short
 
 文件没提交过，`git restore` 一行就回来了。这里得谢一句自己：上下文里那条「不许 git commit」起了作用，Aider 当时要在的话大概率顺手 commit 了，那就得 `git reflog` 翻 HEAD、再 `git restore --source=HEAD~1 -- <file>`，麻烦一档。恢复完我把「删文件前先 `pnpm typecheck` 一遍」也补进了禁止清单。
 
-顺带一提，`git restore` 是 2.23 之后才有的老命令了，我到现在还习惯性想敲 `git checkout --`，肌肉记忆改不动，干脆在上下文里把两条都写上了。
+`git restore` 是 2.23 之后才有的老命令了，我到现在还习惯性想敲 `git checkout --`，肌肉记忆改不动，干脆在上下文里把两条都写上了。
 
 ## 重复活写成脚本，别每次重新对话
 
@@ -140,6 +140,4 @@ echo "骨架好了：$sdl / $resolver，接着填实现和 tests/"
 
 那个 `^[a-z][a-zA-Z0-9]*$` 就是替上下文里的小驼峰规范兜底；`[[ -e ... ]]` 不覆盖，是被 10-09 那次删文件吓出来的。脚本进仓库之后，加 query 这事儿基本不再开新对话了，单轮 token 从 2k 多降到忽略不计。CLI 想用也直接 `./scripts/new-query.sh xxx`，不用我复述流程。
 
-## 还没解决的
-
-`AGENTS.md`、`CLAUDE.md`、`CONVENTIONS.md`、`GEMINI.md` 四份内容现在靠我手动同步，10-09 改过一次构建命令，漏同步了 `GEMINI.md`，隔天它又拿 `npm install` 给我上了一课。想写个脚本从一份 `AGENTS.md` 生成其余三份（软链也行，就是 Windows 上不省心），拖了两天没动手。还有那条「删文件」的禁令其实没真拦住：它走的是补丁里的 Delete File，不是 `rm`，我的禁止清单只列了命令，没列补丁动作——怎么把这条写进上下文才不变成一句空话，还没想好。
+`AGENTS.md`、`CLAUDE.md`、`CONVENTIONS.md`、`GEMINI.md` 四份内容现在靠我手动同步，10-09 改过一次构建命令，漏同步了 `GEMINI.md`，隔天它又拿 `npm install` 给我上了一课。想写个脚本从一份 `AGENTS.md` 生成其余三份（软链也行，就是 Windows 上不省心），拖了两天没动手。还有那条「删文件」的禁令其实没真拦住：它走的是补丁里的 Delete File，不是 `rm`，我的禁止清单只列了命令，没列补丁动作。这条怎么写进上下文才不变成空话，没想好。

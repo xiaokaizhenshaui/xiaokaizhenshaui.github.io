@@ -7,17 +7,17 @@ tags:
   - GraphQL
   - TypeScript
   - Apollo Server
-lead: "第一版照着数据库表抄出 11 个 type，书籍详情页要发 5 次请求；按页面用例重写后一次拿全，type 反而少到 7 个。"
+lead: "第一版照着数据库表抄 Schema，书籍详情页硬是发了五次请求，蠢得挺具体。"
 ---
 
-4 月 9 号晚上 11 点 40，前端同事把 Chrome Network 面板的截图甩进群里，红框圈着 5 个 `/graphql`，配一句「一个书籍详情页你让我发五次？」。我点开日志，确实是 5 个，body 还都不一样：
+「一个书籍详情页你让我发五次？」这句是前端同事甩进群里的，配着一张 Chrome Network 面板截图，红框圈着 5 个 `/graphql`，时间是 4 月 9 号晚上 11 点 40。我点开日志，确实是 5 个，body 还都不一样：
 
 > `{ "query": "{ bookById(id:\"bk_1042\"){ id title authorId priceCents } }" }`
 > `{ "query": "{ authorById(id:\"au_07\"){ id name } }" }`
 > `{ "query": "{ stockByBookId(bookId:\"bk_1042\") }" }`
 > `{ "query": "{ reviewsByBookId(bookId:\"bk_1042\"){ rating content } }" }`
 
-那一刻我反应过来，慢不在 resolver，在我第一版 Schema 就是照着 MySQL 表一行行抄出来的。机器上 `node -v` 是 `v20.11.1`，`@apollo/server` 锁在 `4.10.0`，周末两天全花在推倒重来上。
+那一刻我反应过来，慢跟 resolver 没关系，是我第一版 Schema 照着 MySQL 表一行行抄出来的。机器上 `node -v` 是 `v20.11.1`，`@apollo/server` 锁在 `4.10.0`，周末两天全花在推倒重来上。
 
 ## 第一版：11 张表抄成 11 个 type
 
@@ -66,7 +66,7 @@ type Query {
 }
 ```
 
-完整文件里还有 `Publisher`、`Stock`、`User`、`Cart`、`Category`、`Address`，凑齐 11 个 type，外加 `Query` / `Mutation`。当时还挺得意：字段和表一一对应，`createdAt`、`publisherId` 一个没落，谁都能看懂。顺带一提，`status: Int!` 这个决定后来被我骂了两次，客户端拿到 `20` 完全不知道是该显示「已付款」还是「待发货」，只能自己维护一份魔法数字表。
+完整文件里还有 `Publisher`、`Stock`、`User`、`Cart`、`Category`、`Address`，凑齐 11 个 type，外加 `Query` / `Mutation`。当时还挺得意：字段和表一一对应，`createdAt`、`publisherId` 一个没落，谁都能看懂，唯独 `status: Int!` 这个决定后来被我骂了两次，客户端拿到 `20` 完全不知道是该显示「已付款」还是「待发货」，只能自己维护一份魔法数字表。
 
 ## 五次请求是设计出来的，不是写慢了
 
@@ -138,7 +138,7 @@ type Mutation {
 
 `status: Int!` 换成了 `inStock: Boolean!`，`createdAt`、`publisherId` 这种页面根本不用的字段直接从对外契约里删掉（库里还留着，内部用，不暴露）。type 从 11 个降到 7 个（含一个 input），请求从 5 次变 1 次，首屏接口耗时从 900ms 左右掉到 260ms。前端那个 ViewModel 文件当场删了。
 
-改完客户端那条查询长这样：`{ bookDetail(id:"bk_1042"){ title priceCents coverUrl author { name otherBookCount } inStock reviewCount topReviews { content rating } } }`，一次拿全，浏览器里再没有 join。删字段这事我当时还犹豫过，怕以后要用又得加回来；后来发现真需要的是内部报表和后台，走的是另一套直连库的 Java 服务，压根不经过 GraphQL，删得挺干净。对外契约少一个字段，就少一处要长期兼容的负担，这笔账是后来才想明白的。
+改完客户端那条查询长这样：`{ bookDetail(id:"bk_1042"){ title priceCents coverUrl author { name otherBookCount } inStock reviewCount topReviews { content rating } } }`，一次拿全，浏览器里再没有 join。删字段这事我当时还犹豫过，怕以后要用又得加回来。后来发现真需要的是内部报表和后台，走的是另一套直连库的 Java 服务，压根不经过 GraphQL，删得挺干净。对外契约少一个字段，就少一处要长期兼容的负担，这笔账是后来才想明白的。
 
 ## schema-first 还是 code-first
 
@@ -151,9 +151,9 @@ type Mutation {
 | 类型和 resolver 对齐 | 靠人肉，加字段容易漏 | 编译器帮你盯着 |
 | 我这种 Java 脑子 | 看着 SDL 舒服 | 一堆 builder 链式调用，半天进不去状态 |
 
-选来选去还是选了 schema-first，主要因为前端要拿 SDL 做 codegen，而且「改了哪个字段」在 review 时一眼能看出来。代价也认了：有次给 `BookDetail` 加了 `subtitle`，SDL 改了 resolver 忘了，页面一片空白，查了半小时。后来上了 codegen 生成 `Resolvers` 类型，编译器开始替我盯这件事，这个坑才堵上（怎么接进 CI 是另一篇的事）。
+选来选去还是选了 schema-first，主要因为前端要拿 SDL 做 codegen，而且「改了哪个字段」在 review 时一眼能看出来。代价也认了：有次给 `BookDetail` 加了 `subtitle`，SDL 改了 resolver 忘了，页面一片空白，查了半小时。后来上了 codegen 生成 `Resolvers` 类型，编译器开始替我盯这件事，这个坑才堵上。
 
-另外 code-first 那套我并没完全否掉，内部后台后来试过 Pothos，写起来确实顺，类型不用两处维护，加字段时 builder 会提醒你把 resolver 补上。只是对外这套已经跑了大半年，SDL 还被小程序和 codegen 两边引用，迁移成本比收益高，就先搁着。工具没有对错，看谁在消费这份契约，以及改动的时候谁会被牵连——这句当时要是早点想明白，能少写一版 Schema。
+另外 code-first 那套我并没完全否掉，内部后台后来试过 Pothos，写起来确实顺，类型不用两处维护，加字段时 builder 会提醒你把 resolver 补上。只是对外这套已经跑了大半年，SDL 还被小程序和 codegen 两边引用，迁移成本比收益高，就先搁着。工具没什么对错，得看谁在消费这份契约、改动时谁会被牵连。这句当时早点想明白，能少写一版 Schema。
 
 ## 错误消息：中文给人看，英文给机器看
 
@@ -203,7 +203,7 @@ main().catch((err) => {
 });
 ```
 
-`code` 给前端弹窗分流和监控报警用，`message` 给人看，`bookId` 这类结构化的塞进 `extensions` 而不是拼进句子。顺带说一句，上面 `loadAuthorBrief` 暂时还是一条 SQL 一本书，列表页会打出 31 条，这个坑当时完全没意识到，先记着。
+`code` 给前端弹窗分流和监控报警用，`message` 给人看，`bookId` 这类结构化的塞进 `extensions` 而不是拼进句子。上面 `loadAuthorBrief` 暂时还是一条 SQL 一本书，列表页会打出 31 条，这个坑我当时压根没意识到。
 
 ## 依赖清单
 
@@ -229,6 +229,6 @@ main().catch((err) => {
 
 `npm install && npm run dev` 起来之后 `curl -X POST http://localhost:4000/graphql -H 'content-type: application/json' -d '{"query":"{ featuredBooks(limit:2){ title priceCents author { name } } }"}'` 能直接拿到嵌套的作者名。我第一次跑的时候把 `schema.graphql` 放到了项目根目录，`readFileSync('./src/schema.graphql')` 直接 `ENOENT`，改成绝对路径才消停，这种小破事记一下免得下次再踩。
 
-## 还没解决的
+`BookDetail.alsoBought` 是递归的，客户端能构造 `alsoBought { alsoBought { alsoBought { ... } } }` 一路套下去，服务端没加查询深度限制，真被人写个 20 层的查询大概率要把库拖死。Apollo Server 4 本身不带 depth limit，得自己挂个 validation rule，或者上 `graphql-depth-limit` 之类的包。我一直没动，卡在限几层：限 3 层，推荐位的设计稿刚好要用到第 3 层，卡太死又怕以后改版。N+1 那摊 `loadAuthorBrief` 也还欠着，一条 SQL 一本书。
 
-`BookDetail.alsoBought` 是递归的，客户端能构造 `alsoBought { alsoBought { alsoBought { ... } } }` 一路套下去，服务端没加查询深度限制，真被人写个 20 层的查询大概率要把库拖死。Apollo Server 4 本身不带 depth limit，得自己挂个 validation rule 或者上 `graphql-depth-limit` 之类的包。我还没动，主要没想清楚限几层合适：限 3 层，推荐位的设计稿刚好要用到第 3 层，卡太死又怕以后改版。先记着，等把 N+1 那摊弄完再说。
+递归这种字段，当初加得随手，现在想起来就头疼。

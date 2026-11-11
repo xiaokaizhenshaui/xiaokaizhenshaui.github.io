@@ -7,12 +7,12 @@ tags:
   - Java
   - GraalVM
   - Spring Boot
-lead: "冷启动从 2.6 秒压到 0.078 秒我信了，可 200 QPS 压满 10 分钟后 native 常驻 310MB、JVM 330MB，省下的那点还不够我多花的 6 分钟构建。"
+lead: "冷启动压到 0.078 秒我信了，压满 10 分钟内存还是 310MB，白高兴。"
 ---
 
 ## 扩容那 40 秒
 
-2026-11-05 下午 15 点出头，大促预热，HPA 把订单服务从 4 个 pod 拉到 12 个。我盯着 `kubectl get pods -w`，新 pod 从 Pending 到 Ready 普遍 38~42 秒，其中真正属于我们代码的只有一小段：JVM 起来、Spring 上下文刷新，日志里那行 `Started OrderApiApplication in 2.6 seconds`，再叠加 readiness 探针的 `initialDelaySeconds: 10` 和两次成功间隔，第一波流量打进来时前面几个请求基本是凉的。
+现在回看，那天下午光盯着 `kubectl get pods -w` 就盯了小半天。2026-11-05 下午 15 点出头，大促预热，HPA 把订单服务从 4 个 pod 拉到 12 个。新 pod 从 Pending 到 Ready 普遍 38~42 秒，其中真正属于我们代码的只有一小段：JVM 起来、Spring 上下文刷新，日志里那行 `Started OrderApiApplication in 2.6 seconds`，再叠加 readiness 探针的 `initialDelaySeconds: 10` 和两次成功间隔，第一波流量打进来时前面几个请求基本是凉的。
 
 > `order-api-7d9f4c8b5-x2mkq   0/1   Running   0   19s` → `order-api-7d9f4c8b5-x2mkq   1/1   Running   0   41s`
 
@@ -38,7 +38,7 @@ $ ./mvnw -Pnative native:compile -DskipTests
 
 > `Killed process 2143 (native-image), total-vm:7184324kB, anon-rss:3891044kB, ...`
 
-一句话，`native-image` 自己就是个吃内存的 Java 进程，做可达性分析时把 4G 的 runner 撑爆了，OOM killer 直接收走。我之前完全没往这儿想——下意识觉得「构建产物是省内存的，构建过程应该也省」，这逻辑现在看挺蠢的。（顺带一提，那天 CI 队列里还排着另外三个 job，我这一跑把它们也拖慢了，隔壁组在群里问了一句「谁在跑 native」，我没敢认。）
+一句话，`native-image` 自己就是个吃内存的 Java 进程，做可达性分析时把 4G 的 runner 撑爆了，OOM killer 直接收走。我之前完全没往这儿想——下意识觉得「构建产物是省内存的，构建过程应该也省」，这逻辑现在看挺蠢的。（那天 CI 队列里还排着另外三个 job，我这一跑把它们也拖慢了，隔壁组在群里问了一句「谁在跑 native」，我没敢认。）
 
 ## 把内存喂饱之后
 
@@ -163,7 +163,7 @@ $ /usr/bin/time -v ./target/order-api --server.port=8080
         Maximum resident set size (kbytes): 98432
 ```
 
-空载刚起来那会儿 native 只有 96 MB、JVM 214 MB，看着像省了一半，我一激动截了图发群里，配了句「这波稳了」。十分钟后那张图就被打脸了：压测到 200 QPS，Jackson 序列化、DTO 分配、Hikari 连接池这些活一样没少，native 没有 JIT、GC 的弹性也不一样，堆外加堆一路涨到 310 MB，跟 JVM 的 330 MB 基本贴在一起，差的那 20 MB 还在波动范围内。也就是说冷启动那 2.5 秒是真省下来了，内存没省——空载那个漂亮数字只存在于没有流量的时候。
+空载刚起来那会儿 native 只有 96 MB、JVM 214 MB，看着像省了一半，我一激动截了图发群里，配了句「这波稳了」。十分钟后那张图就被打脸了：压测到 200 QPS，Jackson 序列化、DTO 分配、Hikari 连接池这些活一样没少，native 没有 JIT、GC 的弹性也不一样，堆外加堆一路涨到 310 MB，跟 JVM 的 330 MB 基本贴在一起，差的那 20 MB 还在波动范围内。说白了冷启动那 2.5 秒是真省下来了，内存没省——空载那个漂亮数字只存在于没有流量的时候。
 
 体积上更不占理：42 MB 的 fat jar 变成 88 MB 的二进制，镜像层还得多塞一份 glibc。
 
@@ -173,8 +173,6 @@ $ /usr/bin/time -v ./target/order-api --server.port=8080
 
 原来 `mvn package` 一分四十秒，native 这一趟六分十二秒，翻了快四倍。每个 PR 都跑不现实，我们改成只在大促分支和 nightly 上跑，`native` profile 从默认流水线里摘了出来。这还是单机串行，真要并行几个 namespace，构建机的内存得再翻。
 
-更难受的是调试。native 里没有 `-XX:+HeapDumpOnOutOfMemoryError`，`jstack`、`jmap`、`jcmd` 全用不上；出了异常，堆栈是符号化过后薄薄几行，行号经常对不上源码；反射漏注册这种事没有任何静态检查能保底，只能靠接口跑一遍撞出来——我这次是 curl 撞出来的，下单链路里还有两个不常走到的分支，到现在我也没十足把握它俩的 hint 齐了。AOT 生成的 sources 能读，但那不是给人读的。（顺带一提，native 的日志文件默认也不带 JVM 那套 GC log，排查内存全靠 `/usr/bin/time -v` 和 cgroup 的 `memory.current`，糙得很。）
+更难受的是调试。native 里没有 `-XX:+HeapDumpOnOutOfMemoryError`，`jstack`、`jmap`、`jcmd` 全用不上；出了异常，堆栈是符号化过后薄薄几行，行号经常对不上源码；反射漏注册这种事没有任何静态检查能保底，只能靠接口跑一遍撞出来——我这次是 curl 撞出来的，下单链路里还有两个不常走到的分支，到现在我也没十足把握它俩的 hint 齐了。AOT 生成的 sources 能读，但那不是给人读的。（native 的日志文件默认也不带 JVM 那套 GC log，排查内存全靠 `/usr/bin/time -v` 和 cgroup 的 `memory.current`，糙得很。）
 
-## 还没解决的
-
-冷启动这笔账算清楚了：0.078 秒对 2.6 秒，扩容那 40 秒能砍掉一小截，值不值见仁见智；内存那笔账是平的，甚至体积还亏了。但有个问题我一直没答案：310 MB 里到底哪部分是堆外、哪部分是 native image 自己的元数据？`-XX:+PrintGCDetails` 没了，cgroup 只能给个总数，我找不到等价的观测手段把这块拆开。还有第三方 SDK 里那些藏在 `Class.forName` 后面的类，AOT 静态扫不到，我现在只能靠 nightly 跑一遍全量接口碰运气。等哪天把这两件事弄明白，下次再写。
+冷启动这笔账算清楚了：0.078 秒对 2.6 秒，扩容那 40 秒能砍掉一小截，值不值见仁见智；内存那笔账是平的，甚至体积还亏了。但有个问题我一直没答案：310 MB 里到底哪部分是堆外、哪部分是 native image 自己的元数据？`-XX:+PrintGCDetails` 没了，cgroup 只能给个总数，我找不到等价的观测手段把这块拆开。还有第三方 SDK 里那些藏在 `Class.forName` 后面的类，AOT 静态扫不到，我现在只能靠 nightly 跑一遍全量接口碰运气。这活儿全靠撞，撞不出来就当没事，糊弄得很。

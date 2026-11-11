@@ -7,7 +7,7 @@ tags:
   - JVM
   - OOM
   - 排障
-lead: "02:14 告警，4G 堆被一个 static HashMap 吃到 3.8G；先别重启，dump 留下来才查得动。"
+lead: "一个 static HashMap 把 4G 堆吃到 3.8G，我按住值班同事没让重启，就为留份 dump。"
 ---
 
 6 月 20 号凌晨 02:14，企业微信机器人把我和值班同事一起叫醒了：
@@ -16,7 +16,7 @@ lead: "02:14 告警，4G 堆被一个 static HashMap 吃到 3.8G；先别重启�
 
 容器是 4C8G，`-Xmx4g -Xms4g`，G1，JDK 21.0.4，跑的是订单服务。日志里还没出现 `OutOfMemoryError`，但按这个趋势再撑半小时就会。
 
-值班同事第一反应是重启 pod，我在群里按住了。重启两分钟就能把告警消掉，可现场也就没了——堆里那 3.8G 到底是什么，重启之后谁也说不清，下次照样炸。何况 `-XX:+HeapDumpOnOutOfMemoryError` 当时没开（属于欠账，后面补上了），真等进程自己 OOM 退出，连 dump 都不会有。
+值班同事第一反应是重启 pod，我在群里按住了。重启两分钟就能把告警消掉，可现场也就没了——堆里那 3.8G 到底是什么，重启之后谁也说不清，下次照样炸。何况 `-XX:+HeapDumpOnOutOfMemoryError` 当时没开，这笔欠账后面才补上，真等进程自己 OOM 退出，连 dump 都不会有。
 
 ## 先把现场留下来
 
@@ -89,7 +89,7 @@ SELECT * FROM INSTANCEOF com.example.order.fee.OrderFeeCache
 
 翻 git log，这个类是 2021 年加的，当时的注释写着「费率规则很少变，查库太频繁，放内存里」。那时候系统只有 3 个租户、几百个 sku，`HashMap` 撑死几千条，确实不用设上限。问题出在后来两次改动：一是接了多租户，key 里带了 `tenantId`；二是改价接口为了留痕，把版本号拼进了 key，变成 `fee:t102:sku8891:v17` 这种。我抽了 dump 里的 key 样本看，同一个 sku 攒了两百多个不同版本，全活着，永远不覆盖，也永远不删。
 
-所以不是「忘了设上限」这么简单，是 key 的语义悄悄变了，从「当前生效的规则」变成「每一次改价的快照」，可类名和注释都没跟着改。review 的时候谁也想不到一个叫 `CACHE` 的 static Map 会变成只增不减的账本。
+光说「忘了设上限」太简单了，key 的语义悄悄变了，从「当前生效的规则」变成「每一次改价的快照」，可类名和注释都没跟着改。review 的时候谁也想不到一个叫 `CACHE` 的 static Map 会变成只增不减的账本。
 
 ## 换成 Caffeine，然后验证
 
@@ -134,12 +134,8 @@ public class OrderFeeCache {
 }
 ```
 
-验证分三步。第一，本地把改价接口按 50 QPS 连打两小时，`size()` 稳定在 7600~8100 之间，`evictions()` 一直在涨，说明确实在淘汰而不是又堆起来了。第二，灰度一个副本 24 小时，Old Gen 从 3.8G 回落到 600M 上下，Full GC 从出事那晚的每小时 20 多次降到 0。第三，把 `size()` 和 `evictions()` 注册到 `MeterRegistry`，Grafana 上加了一条 `size() > 9000` 就告警的规则——上限这种东西，光配了不看，过两年一样会出事。
+验证分三步。先在本地把改价接口按 50 QPS 连打两小时，`size()` 稳定在 7600~8100 之间，`evictions()` 一直在涨，说明确实在淘汰而不是又堆起来了。再灰度一个副本 24 小时，Old Gen 从 3.8G 回落到 600M 上下，Full GC 从出事那晚的每小时 20 多次降到 0。`size()` 和 `evictions()` 也注册到了 `MeterRegistry`，Grafana 上加了一条 `size() > 9000` 就告警的规则——上限这种东西，光配了不看，过两年一样会出事。
 
 顺手把欠账补了：启动参数加上 `-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/dump`，以后真 OOM 不用再靠人手快。
 
-## 还没解决的
-
-`cache.get(key, loader)` 能保证单个 key 只回源一次，但不同 key 一起失效时还是会把 DB 顶一下，`refreshAfterWrite` 暂时没上。另外合作方那台联调机还跑着老客户端，改价接口一天发三千多次，key 归一化之后重复率高了不少，`expireAfterWrite` 十分钟是不是长了，得再跑一周看命中率再定。
-
-dump 我还留着，3.7G，没舍得删。如果你也半夜被这种「Full GC 回收不动」的告警叫起来过，欢迎到 GitHub 开 issue 聊聊你是怎么留现场的，我总觉得先摘流量再 dump 这套还能再利索点。
+`cache.get(key, loader)` 能保证单个 key 只回源一次，但不同 key 一起失效时还是会把 DB 顶一下，`refreshAfterWrite` 暂时没上。合作方那台联调机还跑着老客户端，改价接口一天发三千多次，key 归一化之后重复率高了不少，`expireAfterWrite` 十分钟是不是给长了，命中率还得再跑一周看。先摘流量再 dump 这套，我总觉得还能再利索点。dump 我还留着，3.7G，没舍得删。

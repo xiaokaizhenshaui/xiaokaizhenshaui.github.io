@@ -7,16 +7,16 @@ tags:
   - Docker
   - Compose
   - 开发环境
-lead: "MySQL 8、Redis 7、单节点 Kafka KRaft、ES 8 塞进一个 compose.yaml，从手动装半天缩到 docker compose up -d --wait 的 90 秒，代价是被 ES 一口吃掉 4G 内存坑过。"
+lead: "本地起中间件这事儿，我现在全交给一个 compose.yaml 了。"
 ---
 
-9 月 17 号晚上 21:40，新 checkout 的项目在我这台 16G 的 M2 上死活起不来，日志第一行就是 `Communications link failure`，`Caused by: java.net.ConnectException: Connection refused`，连的是 `localhost:3307` 的 MySQL。可 `docker compose ps` 里 MySQL 明明是 `Up 2 seconds` 啊。盯着看才反应过来：`Up` 只代表进程起来了，MySQL 8 第一次初始化数据目录要跑几十秒，这会儿端口根本没在监听，应用抢跑，直接被拒。
+`docker compose ps` 里 MySQL 明明是 `Up 2 seconds`，应用却连 `localhost:3307` 直接被拒——日志第一行 `Communications link failure`，底下 `Caused by: java.net.ConnectException: Connection refused`。新 checkout 的项目在我这台 16G 的 M2 上就这么死活起不来，那天是 9 月 17 号晚上 21:40。盯着看才反应过来：`Up` 只代表进程起来了，MySQL 8 第一次初始化数据目录要跑几十秒，这会儿端口根本没在监听，应用抢跑，直接被拒。
 
-（顺带一提，我 2021 年还写过一篇《手动在 CentOS 7 上装 Docker 再一个个拉 MySQL/Redis》，光配 my.cnf 字符编码和开机自启就写了小两千字。现在回头看纯属自己折腾自己，那篇底下有读者留言问「为啥不直接用 compose」，当时嘴硬没回，这回算是还债了。）
+（我 2021 年还写过一篇《手动在 CentOS 7 上装 Docker 再一个个拉 MySQL/Redis》，光配 my.cnf 字符编码和开机自启就写了小两千字。现在回头看纯属自己折腾自己，那篇底下有读者留言问「为啥不直接用 compose」，当时嘴硬没回，这回算是还债了。）
 
 ## 第一版：只有 depends_on，没有健康
 
-最早那版我写的是短语法 `depends_on: [mysql, redis, kafka, elasticsearch]`。它只保证「容器启动顺序」，不保证「服务能用」。MySQL 初始化、ES 起 JVM 做 recovery、Kafka 选 controller，这些都要时间，应用偏偏在 `Up` 的瞬间就开连。改前起十次有七次 `Connection refused`，剩下三次连上了 ES 也在报 `master_not_discovered_exception`。后来每个中间件自己定义 `healthcheck`，应用侧全换成 `condition: service_healthy`，Compose 等健康检查过了才拉应用，起十次十次干净。这个 `depends_on` 的正确写法在下面完整文件里的 `app` 服务中。
+最早那版我写的是短语法 `depends_on: [mysql, redis, kafka, elasticsearch]`。它管的只是容器起来的先后，服务能不能用不管。MySQL 初始化、ES 起 JVM 做 recovery、Kafka 选 controller，这些都要时间，应用偏偏在 `Up` 的瞬间就开连。改前起十次有七次 `Connection refused`，剩下三次连上了 ES 也在报 `master_not_discovered_exception`。后来每个中间件自己定义 `healthcheck`，应用侧全换成 `condition: service_healthy`，Compose 等健康检查过了才拉应用，起十次十次干净。这个 `depends_on` 的正确写法在下面完整文件里的 `app` 服务中。
 
 ## 端口和 volume 先理顺
 
@@ -139,13 +139,13 @@ Kafka 的 listener 我折腾过两回：第一版只配了一个 `PLAINTEXT://lo
 
 ## ES 吃内存那回
 
-第一版没写 `mem_limit`，也没设 `ES_JAVA_OPTS`，`docker stats` 一看 ES 容器吃到 4.2G，宿主机 16G 被它一个占掉四分之一，IDEA 直接被系统 OOM killer 带走，一下午的断点全没了（真的会骂人）。后来把堆固定成 `-Xms512m -Xmx512m`，再给容器 `mem_limit: 2g` 双保险——JVM 堆只是其中一块，Lucene 的 off-heap、segment cache 还要吃，光锁堆不够。改前 4.2G、改后稳定在 1.6G 上下。`xpack.security.enabled=false` 是本地图省事不配密码，别往任何能连外网的环境抄。
+第一版没写 `mem_limit`，也没设 `ES_JAVA_OPTS`，`docker stats` 一看 ES 容器吃到 4.2G，宿主机 16G 被它一个占掉四分之一，IDEA 直接被系统 OOM killer 带走，一下午的断点全没了。后来把堆固定成 `-Xms512m -Xmx512m`，再给容器 `mem_limit: 2g` 双保险——JVM 堆只是其中一块，Lucene 的 off-heap、segment cache 还要吃，光锁堆不够。改前 4.2G、改后稳定在 1.6G 上下。`xpack.security.enabled=false` 是本地图省事不配密码，别往任何能连外网的环境抄。
 
 healthcheck 用 `_cluster/health` 而不是 `_cat/health`，前者返回 JSON 好判，`-fs` 让 curl 非 2xx 直接失败。`status` 是 yellow 也算过（单节点没副本，本来就 yellow），只要接口通就放行。
 
-`retries` 和 `start_period` 我调过好几轮。一开始 `retries: 5`、`interval: 5s`，MySQL 冷启动 40 多秒，第五次失败 Compose 直接判 unhealthy 把后面全卡住；改成 `retries: 20` 加 `start_period: 30s` 才稳。`start_period` 的意思是这段时间里健康检查失败不计入重试，专门给首次初始化留的，冷启动慢的 MySQL 和 ES 不加基本必挂。顺带说个数字：加它之前 `docker compose up -d` 十次里有四次卡在 mysql 的 healthcheck，加完连着起二十次没再红过。
+`retries` 和 `start_period` 我调过好几轮。一开始 `retries: 5`、`interval: 5s`，MySQL 冷启动 40 多秒，第五次失败 Compose 直接判 unhealthy 把后面全卡住；改成 `retries: 20` 加 `start_period: 30s` 才稳。`start_period` 的意思是这段时间里健康检查失败不计入重试，专门给首次初始化留的，冷启动慢的 MySQL 和 ES 不加基本必挂。加 `start_period` 之前 `docker compose up -d` 十次里有四次卡在 mysql 的 healthcheck，加完连着起二十次没再红过。
 
-（顺带一提，`.env` 我加进 `.gitignore` 了，`dev_only_123456` 这种明文只在本地躺着；compose 里 `${MYSQL_PORT}` 是 Compose 自己做变量插值，别跟容器内的环境变量搞混。改完端口我习惯先跑一遍 `docker compose config` 看渲染结果，确认 `9094:29092` 没替换错再 `up`，比起来之后再查省事。）
+（`.env` 我加进 `.gitignore` 了，`dev_only_123456` 这种明文只在本地躺着；compose 里 `${MYSQL_PORT}` 是 Compose 自己做变量插值，别跟容器内的环境变量搞混。改完端口我习惯先跑一遍 `docker compose config` 看渲染结果，确认 `9094:29092` 没替换错再 `up`，比起来之后再查省事。）
 
 ## .env 和一键重置
 
@@ -172,8 +172,6 @@ docker compose ps
 
 `--wait` 是 Compose V2 才有的（我这边 `Docker Compose version v2.27.0`），它会一直等到所有带 healthcheck 的服务 healthy 才返回，比我自己写 `sleep 30` 靠谱得多。改前我那个脚本是 `up -d` 后面硬塞 `sleep 30`，MySQL 冷启动偶尔超过 30 秒，照样翻车；换成 `--wait` 之后一次没失手。整套从 `down -v` 到 `ps` 出来，计时 90 秒左右，之前手动一个个装是半天。
 
-> 顺带一提，`down -v` 删的是**命名卷**，我那三个 volume 都在 compose 文件里声明着，删得掉；要是你图省事用了 bind mount 到 `./data`，这条命令可不会帮你删，得自己 `rm -rf`。别问我怎么知道的。
+> `down -v` 删的是**命名卷**，我那三个 volume 都在 compose 文件里声明着，删得掉；要是你图省事用了 bind mount 到 `./data`，这条命令可不会帮你删，得自己 `rm -rf`。别问我怎么知道的。
 
-## 还没解决的
-
-`app` 这个服务是我偶尔图省事才塞进 compose 的，平时还是宿主机 IDE 直连，两套 bootstrap 地址（`kafka:9092` 和 `localhost:9094`）得靠人记着别写错，挺烦。还有 `mem_limit` 在非 swarm 下生效，组里有人用 rootless Docker 时行为还不太一样，没验过。下次想把这几个做成 `profiles`，默认只起 MySQL + Redis，ES 和 Kafka 按需拉起来，省得每次开机白等那 40 秒。
+`app` 这个服务是我偶尔图省事才塞进 compose 的，平时还是宿主机 IDE 直连，两套 bootstrap 地址（`kafka:9092` 和 `localhost:9094`）得靠人记着别写错，挺烦。还有 `mem_limit` 在非 swarm 下生效，组里有人用 rootless Docker 时行为还不太一样，没验过。我先把这几个收进 `profiles`，默认只起 MySQL + Redis，ES 和 Kafka 按需拉起来，省得每次开机白等那 40 秒。

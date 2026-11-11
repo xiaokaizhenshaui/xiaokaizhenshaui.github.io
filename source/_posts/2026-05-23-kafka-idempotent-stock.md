@@ -7,7 +7,7 @@ tags:
   - Kafka
   - 消息队列
   - 幂等
-lead: "consumer 重启一次，offset 没提交，同一条扣减消息被重放了 37 次，一款 SKU 超卖 29 件、赔了 4000 多块；我把 producer 的 enable.idempotence 翻出来配了一遍才发现，它根本不管 consumer 端这摊事。"
+lead: "重放 37 次、超卖 29 件，我还指望 enable.idempotence 能挡住。"
 ---
 
 ## 14:07 那次滚动重启
@@ -24,9 +24,9 @@ lead: "consumer 重启一次，offset 没提交，同一条扣减消息被重放
 2026-05-22 14:08:13.102 [stock-consumer-1-C-1] INFO  c.y.stock.StockListener - 扣减成功 sku=88213 剩余=-29  <-- 重启后重放的第一条
 ```
 
-数了下，同一个订单号 `ORD-20260522-7731` 在重启前后一共被处理了 37 次，库存从 120 一路扣到 -29。上游订单服务因为 RPC 超时也重试过几次，但主因在 consumer：当时图省事用的是默认 `enable.auto.commit=true`，`auto.commit.interval.ms` 默认 5000ms，`max.poll.records=500`。一批 poll 回来 500 条，处理到第 200 多条时 pod 被 `SIGTERM`（没配优雅停机，preStop 也没等 ack），offset 还停在 88400 没到提交周期。新 pod 起来从 88400 重新拉，那 200 多条全部又走了一遍。
+数了下，同一个订单号 `ORD-20260522-7731` 在重启前后一共被处理了 37 次，库存从 120 一路扣到 -29。上游订单服务因为 RPC 超时也重试过几次，但主因在 consumer：当时图省事用的是默认 `enable.auto.commit=true`，`auto.commit.interval.ms` 默认 5000ms，`max.poll.records=500`。一批 poll 回来 500 条，处理到第 200 多条时 pod 被 `SIGTERM`，没配优雅停机，preStop 也没等 ack，offset 还停在 88400 没到提交周期。新 pod 起来从 88400 重新拉，那 200 多条全部又走了一遍。
 
-（顺带一提，`kafka-consumer-groups.sh --describe` 当时显示 LAG 从 0 突然涨到 218，我第一反应是消费能力不够，差点去加分区，其实是 offset 回退了。这个命令后面贴了。）
+`kafka-consumer-groups.sh --describe` 当时显示 LAG 从 0 突然涨到 218，我第一反应是消费能力不够，差点去加分区，其实是 offset 回退了。这个命令后面贴了。
 
 环境：Kafka 3.4.1（3 broker，KRaft 模式），spring-kafka 3.0.9，Spring Boot 3.1.6，MySQL 8.0.32。
 
@@ -40,7 +40,7 @@ acks=all
 transactional.id=stock-prod-1
 ```
 
-consumer 上补了 `isolation.level=read_committed`。本地压测：producer 发 1 条，手动 kill consumer 再起，看库存——扣了两次。我又把 `send` 包进 `executeInTransaction`，还是两次。
+consumer 上补了 `isolation.level=read_committed`。本地压测：producer 发 1 条，手动 kill consumer 再起，看库存，扣了两次。我又把 `send` 包进 `executeInTransaction`，还是两次。
 
 那天下午我才把这几个参数的边界搞清楚，之前基本是望文生义：
 
@@ -50,9 +50,9 @@ consumer 上补了 `isolation.level=read_committed`。本地压测：producer �
 | `transactional.id` + 事务 | producer | 多分区「要么全写要么全不写」，配合 `read_committed` 让 consumer 看不到 abort 的消息 | 已提交的消息被重复投递 |
 | `isolation.level=read_committed` | consumer | 只读 LSO 之前、已 commit 的事务消息，滤掉 uncommitted / abort 的 | 一条已提交消息因 offset 没提交而被重新拉一遍 |
 
-关键就在最后一行：消息在 broker 里本来就只有一份，producer 幂等做得再好也没重复写；问题是我 consumer 处理完了却没提交 offset，broker 认为这批还没消费，重连后原样再发一次。这是 at-least-once 的正常行为，不是 bug。想让「业务副作用只发生一次」，靠 Kafka 配置做不到，得在业务侧自己兜。
+关键就在最后一行：消息在 broker 里本来就只有一份，producer 幂等做得再好也没重复写。问题是我 consumer 处理完了却没提交 offset，broker 认为这批还没消费，重连后原样再发一次。这是 at-least-once 的正常行为，算不上 bug。想让「业务副作用只发生一次」，靠 Kafka 配置做不到，得在业务侧自己兜。
 
-（我把 `transactional.id` 留着了，因为订单服务那边确实有「扣库存 + 写流水」跨两个 topic 的场景要用事务，但跟这次事故没关系，纯粹顺手补的。）
+我把 `transactional.id` 留着了，因为订单服务那边确实有「扣库存 + 写流水」跨两个 topic 的场景要用事务，但跟这次事故没关系，纯粹顺手补的。
 
 所以第一版等于白干。第二版把重心挪到 consumer：关掉自动提交、改手动 ack，并且「只有数据库确实扣成功了才 ack」。
 
@@ -158,13 +158,13 @@ public class StockListener {
 }
 ```
 
-那个 `afterCommit` 我得交代一下，不然容易埋雷：第一版我就是在方法体最后一行直接 `ack.acknowledge()`，review 时被组里同学拦下来了——DB 还没 commit 呢就告诉 broker「我消费完了」，万一中途回滚，消息真就丢了。改成挂到事务同步回调里才算对，这是第二遍才改对的。
+那个 `afterCommit` 我得交代一下，不然容易埋雷：第一版我就是在方法体最后一行直接 `ack.acknowledge()`，review 时被组里同学拦下来了，DB 还没 commit 呢就告诉 broker「我消费完了」，万一中途回滚，消息真就丢了。改成挂到事务同步回调里才算对，这是第二遍才改对的。
 
 ## 死信队列
 
 还有一类消息不能无限重放：JSON 脏数据、`sku_id` 查不到这种，重试一百次也是失败，还会把同一分区后面 99 条全堵住。我给监听容器挂了个 `DefaultErrorHandler`，配 `DeadLetterPublishingRecoverer` 把耗尽重试的消息发到 `stock-deduct.DLT`，回退策略是 `new FixedBackOff(1000L, 3L)`——间隔 1 秒、最多重试 3 次；目的地用 `record.topic() + ".DLT"` 拼，分区号照抄 `record.partition()`，这样人工排查时还能对上原分区。
 
-`FixedBackOff` 那两个参数我第一次还写反了，把 1000 当次数、3 当毫秒，一跑起来重试几乎连着打，日志瞬间刷屏才反应过来——构造是 `(interval, maxAttempts)`，别按字面猜。DLT 里我带上了原始 topic / partition / offset 和异常栈，另外有个单独消费 DLT 的小脚本，人工看完再决定是修数据重投还是作废。（顺带一提，spring-kafka 从 2.8 起 `SeekToCurrentErrorHandler` 就废弃了，我一开始还照着老博客找这个类，白翻了十分钟。）
+`FixedBackOff` 那两个参数我第一次还写反了，把 1000 当次数、3 当毫秒，一跑起来重试几乎连着打，日志瞬间刷屏才反应过来——构造是 `(interval, maxAttempts)`，别按字面猜。DLT 里我带上了原始 topic / partition / offset 和异常栈，另外有个单独消费 DLT 的小脚本，人工看完再决定是修数据重投还是作废。spring-kafka 从 2.8 起 `SeekToCurrentErrorHandler` 就废弃了，我一开始还照着老博客找这个类，白翻了十分钟。
 
 ## 改完的数字
 
@@ -189,6 +189,6 @@ bin/kafka-console-consumer.sh --bootstrap-server kafka-0:9092 --topic stock-dedu
 
 第一条看 CURRENT-OFFSET 和 LAG，第二条翻死信。事故那天我要是先跑了 `--describe`，大概能早点反应过来是 offset 回退，而不是傻乎乎去查消费能力。
 
-## 下次再写
+幂等表现在只留 30 天，定时任务按 `created_at` 删。麻烦在于：万一上游拿一个 31 天前的订单号重投（对账补数、历史订单退款重算都可能），唯一索引已经空出来了，照样能再扣一次。要么把 dedup_key 的保留期跟业务单据生命周期对齐，订单表留 3 年，幂等表也留 3 年，单表得按天分区；要么给扣减加一道「原单据状态」校验。我倾向前者，可 3 年流水按现在每天 80 万条算大概是 8 亿行，分区和归档方案还没定。
 
-幂等表现在只留 30 天，定时任务按 `created_at` 删。问题在于：万一上游拿一个 31 天前的订单号重投（对账补数、历史订单退款重算都可能），唯一索引已经空出来了，照样能再扣一次。要么把 dedup_key 的保留期跟业务单据生命周期对齐（订单表留 3 年，幂等表也留 3 年，单表得按天分区），要么给扣减加一道「原单据状态」校验。我倾向前者，但 3 年流水按现在每天 80 万条算大概是 8 亿行，分区和归档方案还没定。等这个月对账跑完再说。
+光这 8 亿行怎么分区归档，就够喝一壶的。

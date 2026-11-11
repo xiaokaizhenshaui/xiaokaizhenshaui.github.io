@@ -7,7 +7,7 @@ tags:
   - 全栈开发
   - 可观测性
   - GraphQL
-lead: "一个 1.8 秒的 featuredBooks 查了两天没头绪，插完桩才发现是 31 条 SQL 串着跑；改完 210ms，采样率压到 0.2 才没把 Collector 撑爆。"
+lead: "1.8 秒的查询，慢日志里为什么一条都抓不到？31 条 SQL 串着跑，插完桩才看见，改完 210ms。"
 ---
 
 9 月 2 号下午 3 点 40，监控截图丢进群里：`/graphql` 的 P99 从 300ms 跳到 1.8s，前端补了句「列表页转得能去泡杯茶」。我第一反应是慢查询，翻 MySQL slow log，干干净净，没有一条超过 100ms。应用日志里更省事，一次请求就两行：
@@ -19,9 +19,9 @@ lead: "一个 1.8 秒的 featuredBooks 查了两天没头绪，插完桩才发�
 
 ## 两天里我都试了什么
 
-先是加 `console.time`，从 6 处加到 11 处，一次请求打出来 200 多行日志，时间片互相叠着，还得拿计算器减。删了。又试了装某个 APM 的 Node agent，它默认按 HTTP 路由聚合，`/graphql` 全站就一个路由，聚合出来还是一条 1.8s 的粗柱子，等于没看。（顺带一提，那个 agent 还把 `graphql` 包的 `execute` 给 patch 了，启动直接报 `TypeError: Cannot read properties of undefined`，卸了才恢复。）
+先是加 `console.time`，从 6 处加到 11 处，一次请求打出来 200 多行日志，时间片互相叠着，还得拿计算器减。删了。又试了装某个 APM 的 Node agent，它默认按 HTTP 路由聚合，`/graphql` 全站就一个路由，聚合出来还是一条 1.8s 的粗柱子，等于没看。那个 agent 还把 `graphql` 包的 `execute` 给 patch 了，启动直接报 `TypeError: Cannot read properties of undefined`，卸了才恢复。
 
-第二天才想明白：GraphQL 的耗时不在「一个接口」这一层，在 operation 和 field 这两层。要的是一次请求内部的时间去哪了，得有 trace，得能按 `operationName` 拆开。于是上 OpenTelemetry，JS SDK 锁在 `@opentelemetry/api` `1.9.0` + `sdk-node` `0.52.1` 这套——不是最新的，但生产上不想跟着 2.x 的迁移一起动，先求稳。
+第二天才想明白：GraphQL 的耗时藏在 operation 和 field 这两层，盯「一个接口」看不出来。要的是一次请求内部的时间去哪了，得有 trace，得能按 `operationName` 拆开。于是上 OpenTelemetry，JS SDK 锁在 `@opentelemetry/api` `1.9.0` + `sdk-node` `0.52.1` 这套——不是最新的，但生产上不想跟着 2.x 的迁移一起动，先求稳。
 
 还有个更蠢的：我把 `slow log` 的 `long_query_time` 从 1 降到 0.05，抓了一下午，一条都没多出来。事后看 trace 才明白，31 条 SQL 每条 40 多毫秒，谁都够不上慢查询阈值，慢的是「串着跑 31 次」这件事本身。单条都快、加起来慢，是最难从慢日志里看出来的一种，日志里压根不会留下「调用了 31 次」这种信息。
 
@@ -115,7 +115,7 @@ export function withFieldSpan<T>(ctx: Context, name: string, fn: () => Promise<T
 
 `spanContext` 存进 contextValue 是为了让手动加的子 span 挂在 operation span 下面，而不是和它平级挂在 HTTP span 上。第一版我没存，Jaeger 里 31 条 SQL 全散在顶层，看不出是谁打出来的。
 
-Apollo Server 4 的 plugin 钩子挺多，`parsingDidStart`、`validationDidStart`、`executionDidStart` 都能挂，我第一版每个都建了 span，一条简单查询又是十几个。最后只留 `requestDidStart` 里那一个 operation span，解析和校验的耗时并进去不单列——真要查解析慢，再临时开。手动加 span 的字段现在只有 3 个：`BookDetail.author`、`BookDetail.topReviews`、`Query.featuredBooks`，都是历史上出过问题的，其余字段不占额度，真慢起来再加。全开撑爆 Collector、只挑几个又怕漏，这个粒度没找到舒服的中间值，先按这份短名单用着。
+Apollo Server 4 的 plugin 钩子挺多，`parsingDidStart`、`validationDidStart`、`executionDidStart` 都能挂，我第一版每个都建了 span，一条简单查询又是十几个。索性只留 `requestDidStart` 里那一个 operation span，解析和校验的耗时并进去不单列——真要查解析慢，再临时开。手动加 span 的字段现在只有 3 个：`BookDetail.author`、`BookDetail.topReviews`、`Query.featuredBooks`，都是历史上出过问题的，其余字段不占额度，真慢起来再加。全开撑爆 Collector、只挑几个又怕漏，这个粒度没找到舒服的中间值，先按这份短名单用着。
 
 ## Collector 和 compose
 
@@ -205,7 +205,7 @@ services:
 }
 ```
 
-`resolver.BookDetail.author` 一个字段吃掉 1.479s，底下是 31 条一模一样的 `SELECT ... FROM authors WHERE id = ?` 串着跑——4 月重写 Schema 时我自己记过「`loadAuthorBrief` 暂时还是一条 SQL 一本书，列表页会打出 31 条」，当时说「等把 N+1 那摊弄完再说」，结果拖到 9 月才真看见它长什么样。换成 DataLoader 批量（`WHERE id IN (...)`，一条 30ms），同样的查询从 1812ms 掉到 210ms，P99 跟着回到 260ms 上下。
+`resolver.BookDetail.author` 一个字段吃掉 1.479s，底下是 31 条一模一样的 `SELECT ... FROM authors WHERE id = ?` 串着跑——4 月重写 Schema 时我自己记过「`loadAuthorBrief` 暂时还是一条 SQL 一本书，列表页会打出 31 条」，当时只记了句「N+1 那摊回头收拾」，结果拖到 9 月才真看见它长什么样。换成 DataLoader 批量（`WHERE id IN (...)`，一条 30ms），同样的查询从 1812ms 掉到 210ms，P99 跟着回到 260ms 上下。
 
 采样率我压到 0.2（`ParentBasedSampler` 包 `TraceIdRatioBasedSampler`）：单条 trace 回到 14 KB，按 60 QPS 算一天约 12 GB span 数据，Jaeger 留 3 天还能接受。0.2 是拍的，试过 0.05，慢请求一天只能捞到两三条，不够看；也试过 1.0，就是上面 1.7 GB 那次。
 
@@ -221,8 +221,6 @@ plugin 里把 `traceId` 塞进 `contextValue` 之后，日志就能和 trace 对
 
 以前客服转一个用户报障过来，只有一句「下午三点多下单失败」，我得拿时间戳去几台机器的日志里翻，运气不好翻半小时。现在让他们把页面角落里那串 traceId 一起复制过来，粘进 Jaeger 就是完整链路。日志本身是 JSON 一行一个事件，`traceId` 挂在顶层字段上，检索时能直接按它聚合，不用再从 `msg` 里正则抠。顺带把 4 月那篇里 `BOOK_NOT_FOUND` 的例子翻出来核了一遍，`message` 还是中文、`code` 还是英文，没走样。
 
-## 还没解决的
-
 head sampling 的采样决策在 span 创建那一刻就定了，`didEncounterErrors` 里想「报错了就强制采下来」已经来不及，现在偶尔一个 500 因为没被采中，Jaeger 里查不到，只能靠日志里那行 `traceId` 干瞪眼。Collector 的 `tail_sampling` processor 能按 duration 和状态码事后决定留哪些，但前提是同一个 trace 的所有 span 得落到同一个 collector 实例，多副本要再配一层 `load_balancing` exporter。我们现在单副本，先凑合。
 
-另外 `featuredBooks` 换成批量查之后，`alsoBought` 那个递归字段还是没加深度限制，4 月欠的账到 9 月还没还。先这样，下次再写。
+`featuredBooks` 换成批量查之后，`alsoBought` 那个递归字段还是没加深度限制。4 月记下的账，到 9 月还没还上，说起来也挺不好意思的。

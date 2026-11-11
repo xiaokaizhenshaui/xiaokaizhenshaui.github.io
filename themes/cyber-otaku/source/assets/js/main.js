@@ -219,4 +219,34 @@
       });
     });
   })();
+
+  /* ---------- 7. 亮暗主题切换 ---------- */
+  (function themeToggle() {
+    var btn = document.getElementById('theme-toggle');
+    if (!btn) return;
+    var icon = document.getElementById('theme-icon');
+    var label = document.getElementById('theme-label');
+    var meta = document.getElementById('meta-theme-color');
+    function sync() {
+      var t = document.documentElement.getAttribute('data-theme') || 'dark';
+      var light = t === 'light';
+      if (icon) icon.textContent = light ? '☀' : '☾';
+      if (label) label.textContent = light ? '亮' : '暗';
+      if (meta) meta.setAttribute('content', light ? '#f5f7fc' : '#0b0e1a');
+    }
+    sync();
+    btn.addEventListener('click', function () {
+      var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+      var next = cur === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', next);
+      try { localStorage.setItem('theme', next); } catch (e) {}
+      sync();
+    });
+    document.addEventListener('keydown', function (e) {
+      if ((e.key === 't' || e.key === 'T') && !/^(input|textarea)$/i.test(e.target.tagName || '') && !(e.metaKey || e.ctrlKey || e.altKey)) {
+        e.preventDefault();
+        btn.click();
+      }
+    });
+  })();
 })();

@@ -88,6 +88,7 @@ category_map:
   大模型: llm
   月度报告: monthly
   随笔: notes
+  架构思考: arch
 
 tag_map:
   Java: java

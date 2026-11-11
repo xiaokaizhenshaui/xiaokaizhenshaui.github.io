@@ -7,15 +7,15 @@ tags:
   - TypeScript
   - GraphQL
   - 工程化
-lead: "前后端各手写一份 Book，改字段漏一处，线上炸了 3 回；把生成步骤塞进 CI 之后，三套方案（codegen / OpenAPI / tRPC）在我们仓库里各管一段，谁也不替代谁。"
+lead: "手写 Book 漏字段炸过 3 回，把生成塞进 CI 之后，我没挑一个方案铺满仓库，反倒让三套各管一段。"
 ---
 
-7 月 28 号傍晚 `npm run typecheck` 挂了，红字挺长：
+就差一个字段：后端 4 月把价格统一成了 `priceCents`，前端手写的 `Book` 里还挂着 `priceYuan`。这类事我们出过 3 回，每回都是「两边各改各的，编译期谁也管不着谁，等页面白屏了才发现」。7 月 28 号傍晚 `npm run typecheck` 又挂了一回，红字挺长：
 
 > `src/resolvers/book.ts:18:5 - error TS2345: Argument of type '{ id: string; priceYuan: number; }' is not assignable to parameter of type 'Book'.`
 > `  Property 'priceCents' is missing in type '{ id: string; priceYuan: number; }' but required in type 'Book'.`
 
-后端 4 月就把价格统一成 `priceCents` 了，前端那份手写的 `Book` 还留着 `priceYuan`。这类事我们已经出过 3 回，每回都是「两边各改各的，编译期谁也管不着谁，等页面白屏了才发现」。当天把生成链条接进 CI，顺手把三套方案的边界理了一遍。仓库是 pnpm workspace，`typescript 5.5.4`，`node v20.11.1`。
+当天把生成链条接进 CI，顺手把三套方案的边界理了一遍。仓库是 pnpm workspace，`typescript 5.5.4`，`node v20.11.1`。
 
 ## 三套方案，我们居然同时在用
 
@@ -27,7 +27,7 @@ lead: "前后端各手写一份 Book，改字段漏一处，线上炸了 3 回�
 | OpenAPI 生成 | Java 侧 springdoc 导出的 `openapi.json` | 只读地调订单服务 | Java 注解一改，json 一大片 diff，生成物跟着抖 |
 | tRPC | `typeof appRouter` 直接推 | 内部后台，前后端同仓库全 TS | 出了 TS 生态就没戏，第三方别想接 |
 
-一句话分法：有非 TS 客户端、要对外开放，走 GraphQL 或 OpenAPI；全 TS、同一个 monorepo、不对外，tRPC 最省事。硬让 tRPC 去服务小程序，等于把「类型共享」变成「必须全用 TS」，这买卖不划算。顺带一提，Java 那边同事听说我们靠 `typeof` 就能把类型传过去，愣了半天，问「那接口文档呢」——确实没有，后台就我们三个人用。
+一句话分法：有非 TS 客户端、要对外开放，走 GraphQL 或 OpenAPI；全 TS、同一个 monorepo、不对外，tRPC 最省事。硬让 tRPC 去服务小程序，等于把「类型共享」变成「必须全用 TS」，这买卖不划算。Java 那边同事听说我们靠 `typeof` 就能把类型传过去，愣了半天，问「那接口文档呢」——确实没有，后台就我们三个人用。
 
 其实 7 月初我一度想把对外的 GraphQL 也换成 tRPC，省掉 SDL 和 codegen 两层。拉了下小程序那边的同事一聊就放弃了：他们用原生 TS 不假，但发版节奏跟我们不同步，接口一变就得跟着升 SDK，而 SDL 好歹能当一份静态契约摆在那儿慢慢对。OpenAPI 那条更没得选，订单服务是 Java 的，归另一个组，我们只有读 `openapi.json` 的份。所以「选一个最好的」这个前提本身就是错的，边界不一样，工具就不该一样。
 
@@ -152,7 +152,7 @@ export const client = createTRPCProxyClient<AppRouter>({
 }
 ```
 
-仓库大概长这样（用列表凑合看下）：
+仓库大概长这样：
 
 - `apps/web/` — Next.js，面向读者，写 `.graphql` 操作文档
 - `apps/api/` — Apollo Server 4，SDL 和 resolver
@@ -165,6 +165,4 @@ export const client = createTRPCProxyClient<AppRouter>({
 
 目录里那两个 `errorCodes.ts`、`zh-CN.ts` 顺带说下它们为什么单独放。GraphQL 的 enum 值只能 ASCII，`OrderStatus { PAID SHIPPED CANCELLED }`，写「已支付」进去启动就报错，我上周刚踩过，回头单独记。中文一律不进 schema、不进生成类型，单独放 `zh-CN.ts`，前端按 `code` 查表。理由很实际：文案一周能改两回，还可能要上英文站，混进类型里等于把产品改动和编译绑死。`description` 里写中文注释没问题，那是文档不是数据，codegen 不会把它变成字段。说到底生成物只负责「字段叫什么、是什么类型」，「这句话怎么说」不该由 schema 决定。
 
-## 还没解决的
-
-tRPC 推出来的 `Book` 和 codegen 生成的 `BookDetail` 现在是两份，前者多了 `costCents`、`internalNote` 这种后台专用字段。我写了个 `assertAssignable` 的类型小工具想手动对齐，但没人跑就等于没有，迟早还会飘。另外 springdoc 导出的 `openapi.json` 到今天还是我手工下载、手工提交进仓库的，Java 那边改了注解经常忘了同步，生成出来的 `OrderDTO` 落后半个版本——把它接进 CI 这事我记在小本上，下次再写。
+tRPC 推出来的 `Book` 和 codegen 生成的 `BookDetail` 现在是两份，前者多了 `costCents`、`internalNote` 这种后台专用字段。我写了个 `assertAssignable` 的类型小工具想手动对齐，但没人跑就等于没有，迟早还会飘。springdoc 导出的 `openapi.json` 到今天还是我手工下载、手工提交进仓库的，Java 那边改了注解经常忘了同步，生成出来的 `OrderDTO` 落后半个版本。接进 CI 这事我一直记在小本上，那本子还是去年年底发的，封面印着句谁也记不住的话。

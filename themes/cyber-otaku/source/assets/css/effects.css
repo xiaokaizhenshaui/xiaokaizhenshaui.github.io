@@ -274,3 +274,8 @@ body.fx-waifu-off .fx-waifu { opacity: 0; visibility: hidden; pointer-events: no
   .fx-reveal, .fx-reveal.is-ready { transition: none !important; opacity: 1 !important; transform: none !important; }
   .fx-cursor-glow { display: none; }
 }
+
+/* ---------- 亮色模式：夜之城远景与暗角收敛，避免压暗亮色页面 ---------- */
+[data-theme="light"] .fx-city { opacity: .07; mix-blend-mode: multiply; }
+[data-theme="light"] .fx-vignette { background: radial-gradient(120% 90% at 50% 45%, transparent 60%, rgba(20, 30, 60, .12) 100%); }
+[data-theme="light"] .hero-city-backdrop { opacity: .2; }

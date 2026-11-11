@@ -15,7 +15,16 @@ var isPost = !!page.layout && page.layout === 'post';
 <meta name="description" content="<%- pDesc %>">
 <meta name="author" content="<%- config.author %>">
 <meta name="keywords" content="<%- isPost && page.tags ? page.tags.toArray().map(function(t){return t.name}).join(',') : config.keywords %>">
-<meta name="theme-color" content="#0b0e1a">
+<meta name="theme-color" content="#0b0e1a" id="meta-theme-color">
+<script>
+  (function () {
+    try {
+      var t = localStorage.getItem('theme');
+      if (!t) t = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+    } catch (e) {}
+  })();
+</script>
 <link rel="canonical" href="<%- pUrl %>">
 <link rel="alternate" type="application/atom+xml" title="<%- config.title %>" href="<%- url_for('/atom.xml') %>">
 <link rel="icon" href="<%- url_for(theme.favicon) %>">

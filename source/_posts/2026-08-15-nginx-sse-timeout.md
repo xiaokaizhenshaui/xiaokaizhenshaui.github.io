@@ -7,12 +7,12 @@ tags:
   - Nginx
   - SSE
   - 长连接
-lead: "EventSource 每 60 秒重连一次，前端背了两天锅，最后发现是 Nginx 的 proxy_read_timeout 默认 60s 加 proxy_buffering 在作妖，改两行再补个 15s 心跳就好了。"
+lead: "前端三版重连全白改，真掐线的是 Nginx 两行默认配置，补个 15s 心跳才消停，之前每 60 秒准时断一次。"
 ---
 
-8 月 12 号下午 14:26，运营在群里甩了张截图：进度条走到一半自己跳回 0，控制台里 `EventSource` 的 error 一秒一条，整整齐齐每 60 秒一次。我第一反应是前端又没处理重连，把同事的代码拉下来翻了半小时，`onerror` 里老老实实啥也没干，就一句 `console.warn`，浏览器自动重连本来就是标准行为。怪的是后端日志里 `SseEmitter` 的 `onCompletion` 也跟着每 60 秒触发一次——不是浏览器单方面断，是整条连接被中间谁掐了。前面挡着的是 Nginx `1.24.0`，Ubuntu 22.04 上 apt 装的，配置基本没动过。
+前端又被冤枉了一回，这回连我自己都先信了。运营在群里甩了张截图，8 月 12 号下午 14:26 的事：进度条走到一半自己跳回 0，控制台里 `EventSource` 的 error 一秒一条，整整齐齐每 60 秒一次。我第一反应是前端又没处理重连，把同事的代码拉下来翻了半小时，`onerror` 里老老实实啥也没干，就一句 `console.warn`，浏览器自动重连本来就是标准行为。怪的是后端日志里 `SseEmitter` 的 `onCompletion` 也跟着每 60 秒触发一次——不是浏览器单方面断，是整条连接被中间谁掐了。前面挡着的是 Nginx `1.24.0`，Ubuntu 22.04 上 apt 装的，配置基本没动过。
 
-> 控制台刷的是：`EventSource's response has a state that is 200 (OK) with Content-Type text/event-stream, but the connection was closed`。readyState 变 0，隔两秒又自动连上。（顺带一提，Chrome 这个自动重连间隔写死在 2~3 秒，你改不动，别折腾。）
+> 控制台刷的是：`EventSource's response has a state that is 200 (OK) with Content-Type text/event-stream, but the connection was closed`。readyState 变 0，隔两秒又自动连上；Chrome 这个重连间隔写死在 2~3 秒，你改不动，别折腾。
 
 ## 先绕的两圈弯路
 
@@ -86,7 +86,7 @@ server {
 }
 ```
 
-`keepalive 32` 那行是给 `/api/` 下那些普通接口用的，`proxy_http_version 1.1` 加 `proxy_set_header Connection ""` 是它生效的前提（否则默认 HTTP/1.0 加 `Connection: close`，连接池白搭）。SSE 这条连接一旦建起来就一直占着一个上游连接，跟连接池没关系，别搞混。还有个顺带一提：如果站点开了 gzip，`text/event-stream` 也可能被压缩缓冲住，稳妥起见加一句 `proxy_set_header Accept-Encoding "";` 把压缩请求头抹掉，我这次没踩到，但记一下免得下次又查半天。
+`keepalive 32` 那行是给 `/api/` 下那些普通接口用的，`proxy_http_version 1.1` 加 `proxy_set_header Connection ""` 是它生效的前提，否则默认 HTTP/1.0 加 `Connection: close`，连接池白搭。SSE 这条连接一旦建起来就一直占着一个上游连接，跟连接池没关系，别搞混。站点要是开了 gzip，`text/event-stream` 也可能被压缩缓冲住，稳妥起见加一句 `proxy_set_header Accept-Encoding "";` 把压缩请求头抹掉，我这次没踩到，记一笔免得再查半天。
 
 更省事的兜底是让后端自己回一个 `X-Accel-Buffering: no` 响应头，Nginx 见到它就不缓冲该响应。注意它是**响应**头，不是 `proxy_set_header` 那种请求头——我一开始真写成 `proxy_set_header X-Accel-Buffering no` 了，那是发给上游的一个请求头，毛用没有，这坑我踩了小半天。共享 ingress、改不了 Nginx 配置的时候，这个响应头是救命的。
 
@@ -147,8 +147,6 @@ es.addEventListener('error', () => {
 
 真没啥可改的，前端从头到尾都是对的，这也是我最开始冤枉同事的原因。
 
-（顺带一提，`EventSource` 只能发 GET、也没法带自定义 header，token 塞不进 Header 只能走 cookie 或 query 参数。我们这版图省事用了 cookie，跨域那次又单独配了一轮 `withCredentials` 和 `Access-Control-Allow-Credentials`，跟超时没关系，是另一摊事了，先按下不表。）
+`EventSource` 只能发 GET、也没法带自定义 header，token 塞不进 Header 只能走 cookie 或 query 参数。我们这版图省事用了 cookie，跨域那次又单独配了一轮 `withCredentials` 和 `Access-Control-Allow-Credentials`，跟超时没关系，是另一摊事。
 
-## 还没解决的
-
-`proxy_set_header X-Accel-Buffering no` 那半天算白交学费了。另外现在心跳是固定 15s 全连接广播，真到几千条 SSE 连着的时候，这个 `ScheduledExecutorService` 的线程池得单独调，我还没压过；还有走公司那层 SLB 时它自己也有个 60s 空闲超时，`proxy_read_timeout` 改了它不改照样断——这个得找运维，下次再写。
+`proxy_set_header X-Accel-Buffering no` 那半天算白交学费了。心跳现在是固定 15s 全连接广播，真到几千条 SSE 连着的时候，这个 `ScheduledExecutorService` 的线程池得单独调，我还没压过。走公司那层 SLB 时它自己还有个 60s 空闲超时，`proxy_read_timeout` 改了它不改照样断，得找运维。改完自己这一层，前面还有别人那一层等着，长连接这活真是一层都躲不掉。

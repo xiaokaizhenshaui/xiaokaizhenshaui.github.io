@@ -7,7 +7,7 @@ tags:
   - Java
   - JDK
   - 重构
-lead: "7 个状态类从 312 行压到 148 行，少掉的 164 行全是 getter、equals 和那个骗过编译器的 default 分支。"
+lead: "7 个状态类瘦掉一半，少掉的 164 行没一行是业务逻辑。"
 ---
 
 8 月 3 号上午产品说要加个「部分退款」状态。听起来是个小需求：订单状态加个枚举值，几个地方补一下分支。我当时也是这么想的，结果当天下午灰度就出了事——有个用户申请了部分退款，退款金额算成了 0，页面还显示「处理中」。查下来是 `OrderFeeCalculator` 里一段 `if-else` 漏了新状态，走了兜底返回 0。
@@ -100,7 +100,7 @@ final class StatusText {
 
 > the switch expression does not cover all possible input values
 
-这就是我要的东西。以前靠 `grep` 和记性，现在漏一处就编译不过，CI 直接拦住。补完 7 处，`git diff --stat` 显示动了 9 个文件。`Done d` 那个模式变量没用到，编译器会嘀咕一句但不影响，等下次真要显示完成时间再改。
+这就是我要的东西。以前靠 `grep` 和记性，现在漏一处就编译不过，CI 直接拦住。补完 7 处，`git diff --stat` 显示动了 9 个文件。`Done d` 那个模式变量没用到，编译器会嘀咕一句但不影响，真要显示完成时间时再补这处。
 
 ## 少掉的 164 行
 
@@ -111,9 +111,9 @@ final class StatusText {
 | 其他（配置、注解） | 22 行 | 21 行 |
 | 合计 | 312 行 | 148 行 |
 
-大头是那 6 个状态 DTO。以前每个状态有自己的字段，却都挤在同一个 `OrderStateDto` 里：private final 字段、getter、`equals`、`hashCode`、`toString`、全参构造、builder，Lombok 没敢上（组里有人吃过 `@Data` 加继承的亏），全是手写的，一个 30 行。换成 record 之后一行完事，构造、`equals`、`hashCode`、`toString`、访问器全由编译器生成，`orderId()` 顺带把接口里那个抽象方法也实现了。
+大头是那 6 个状态 DTO。以前每个状态有自己的字段，却都挤在同一个 `OrderStateDto` 里：private final 字段、getter、`equals`、`hashCode`、`toString`、全参构造、builder，Lombok 没敢上，组里有人吃过 `@Data` 加继承的亏，全是手写的，一个 30 行。换成 record 之后一行完事，构造、`equals`、`hashCode`、`toString`、访问器全由编译器生成，`orderId()` 顺带把接口里那个抽象方法也实现了。
 
-顺带一提，record 的组件是 final，状态对象天然不可变。原来那个 DTO 有个 `setRefundAmount()` 被两个地方偷偷调用，改的是状态对象本身的值，上次查退款金额算错时绕了半天才找到——现在想这么干也干不了。
+record 的组件是 final，状态对象天然不可变。原来那个 DTO 有个 `setRefundAmount()` 被两个地方偷偷调用，改的是状态对象本身的值，上次查退款金额算错时绕了半天才找到——现在想这么干也干不了。
 
 分支代码只少了 22 行，比我想的少。因为 switch 表达式本来就没比老的 switch 短多少，真正省的是「不用再写 7 个兜底分支」，以及那 7 处不用再各自 `throw new IllegalStateException("未知状态")`。
 
@@ -173,6 +173,6 @@ public class JacksonConfig {
 
 金额全换成 `BigDecimal` 了，构造用 `new BigDecimal("19.90")` 或者 `BigDecimal.valueOf(1990, 2)`，别用 `new BigDecimal(19.90)`——那个 double 构造器把二进制误差原样带进来，`19.90` 会变成 `19.899999...`。对账脚本里那几笔差一分钱的，换完就没了。这个改动跟 sealed 没关系，纯粹是趁着重构一起收拾，单独提一句免得下次又有人写回去。
 
-还没解决的：`registerSubtypes` 那份列表还是手写的，测试能兜住「漏注册」，兜不住「名字写错」——类型名是字符串，拼错一个字母编译照样过，只有消息到了才炸。想过去掉 `@JsonTypeInfo`、改成按字段自己判类型，但那样又回到写 switch 的老路上，没想好。另外 MQ 里还飘着老版本消费者，它们只认那 5 个 `type`，新增的 `PARTIAL_REFUNDED` 会被当成未知类型丢进死信，得等合作方发版，估计下周。
+`registerSubtypes` 那份列表还是手写的，测试能兜住「漏注册」，兜不住「名字写错」——类型名是字符串，拼错一个字母编译照样过，只有消息到了才炸。想过去掉 `@JsonTypeInfo`、改成按字段自己判类型，可那样又回到写 switch 的老路上。另外 MQ 里还飘着老版本消费者，它们只认那 5 个 `type`，新增的 `PARTIAL_REFUNDED` 会被当成未知类型丢进死信，得等合作方发版，估计下周。
 
-如果你也用 sealed + record 做过状态机，尤其是多态序列化这块有更省事的做法，欢迎到 GitHub 开 issue 说两句，我不想再维护一份手写名单了。
+多态序列化这块到底有没有更省事的做法，不用再维护一份手写名单？如果你也用 sealed + record 做过状态机，欢迎到 GitHub 开 issue 说两句。

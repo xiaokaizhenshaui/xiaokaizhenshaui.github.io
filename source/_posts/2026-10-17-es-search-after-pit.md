@@ -7,10 +7,10 @@ tags:
   - ElasticSearch
   - 分页
   - 搜索
-lead: "后台导出按 from+size 翻到第 800 页被 max_result_window=10000 拍回来，换成 PIT + search_after 后 42 万条订单 3 分钟导完，中间还踩了排序不唯一的坑。"
+lead: "翻到第 800 页被 ES 一行红拍回来，深分页这坑我认栽。"
 ---
 
-10 月 15 号上午 10:12，运营跑那个「导出全部订单」的任务，日志里啪地一行红：
+这种全量导出，翻到后头准没好事。10 月 15 号上午 10:12，运营跑那个「导出全部订单」的任务，日志里啪地一行红：
 
 > `{"error":{"root_cause":[{"type":"query_phase_execution_exception","reason":"Result window is too large, from + size must be less than or equal to: [10000] but was [16000]. See the scroll api for a more efficient way to request large data sets. This limit can be set by changing the [index.max_result_window] index level setting."}],"type":"search_phase_execution_exception"},"status":400}`
 
@@ -18,9 +18,9 @@ lead: "后台导出按 from+size 翻到第 800 页被 max_result_window=10000 �
 
 ## from+size 为啥越翻越慢
 
-这不是参数小气，是机制本身扛不住深分页。ES 是分片的，`from=15980, size=20` 这个请求发到协调节点后，**每个分片**都得在本地维护一个能装 `from+size` 条（也就是 16000 条）的优先队列，把命中的文档排好序、丢掉前 15980 条、留下最后 20 条回传。3 个分片就是 3×16000 = 48000 条文档在内存里排一遍，协调节点再把 3 份结果归并。翻到 `from=999980` 那种量级，每个分片要抱住一百万条，堆和 CPU 一起炸。所以 `from+size` 天生适合「前几页」，越往后成本线性涨，跟 10000 这个阈值无关——把阈值调到 20 万只是把撞墙的点往后挪，没解决慢。
+参数不算小气，机制本身就扛不住深分页。ES 是分片的，`from=15980, size=20` 这个请求发到协调节点后，**每个分片**都得在本地维护一个能装 `from+size` 条（也就是 16000 条）的优先队列，把命中的文档排好序、丢掉前 15980 条、留下最后 20 条回传。3 个分片就是 3×16000 = 48000 条文档在内存里排一遍，协调节点再把 3 份结果归并。翻到 `from=999980` 那种量级，每个分片要抱住一百万条，堆和 CPU 一起炸。所以 `from+size` 天生适合「前几页」，越往后成本线性涨，跟 10000 这个阈值无关——把阈值调到 20 万只是把撞墙的点往后挪，没解决慢。
 
-（顺带一提，报错里那句 `See the scroll api` 是老版本留下的建议，现在官方更推 PIT + search_after；scroll 每次要维护上下文、还不适合实时翻页，别照着那句去用 scroll 了。）
+（报错里那句 `See the scroll api` 是老版本留下的建议，现在官方更推 PIT + search_after；scroll 每次要维护上下文、还不适合实时翻页，别照着那句去用 scroll 了。）
 
 我后来 `GET /orders/_settings?include_defaults=true&filter_path=**.max_result_window` 拉过一次，确认就是 `10000`，没人动过这个索引。想靠调大阈值蒙混过关的念头就此断了——真把 `index.max_result_window` 改成 200000，等于允许每个分片抱住二十万条文档排序，三个分片六十万条堆在协调节点，OOM 只是时间问题，比报错更难查。
 
@@ -137,6 +137,4 @@ try {
 | 42 万条全量 | 跑不完，被杀 | 3 分 12 秒 |
 | 翻页期间新写入 | 视图会变，可能漏 | PIT 快照隔离，稳 |
 
-## 还没解决的
-
-`search_after` 只能往后一页页走，运营偶尔要「直接跳到第 900 页」这种需求它给不了，得配合别的方式（比如按时间切片分批），这块还没做。还有 `keep_alive=5m` 是按我本地全量 3 分钟估的，真碰到数据量翻十倍、导出中途卡一下，PIT 可能过期报 `search_context_missing_exception`，到时候要么把 keep_alive 调大、要么做续期重试。下次想试试拿 `slice` 做并行导出，看能不能把 3 分钟再压一压。
+`search_after` 只能往后一页页走，运营偶尔要「直接跳到第 900 页」这种需求它给不了，得配合别的方式（比如按时间切片分批），这块还没做。还有 `keep_alive=5m` 是按我本地全量 3 分钟估的，真碰到数据量翻十倍、导出中途卡一下，PIT 可能过期报 `search_context_missing_exception`，到时候要么把 keep_alive 调大、要么做续期重试。拿 `slice` 做并行导出、把 3 分钟再压一压，听着挺美，我连个 benchmark 都懒得搭。

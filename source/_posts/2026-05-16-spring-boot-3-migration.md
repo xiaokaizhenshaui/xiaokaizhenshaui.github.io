@@ -7,10 +7,10 @@ tags:
   - Spring Boot
   - Java
   - 升级
-lead: "javax 换 jakarta 只花了半天，剩下两天半全耗在一个靠反射撬 JDK 内部字段的老依赖上——47 个测试红了三天。"
+lead: "47 个测试红了三天，工夫大半耗在一个靠反射撬 JDK 内部字段的老依赖上。"
 ---
 
-5 月 12 号周二下午 16:40，CI 上 `mvn test` 跑完，一片红。47 个测试，47 个 `java.lang.NoClassDefFoundError: javax/servlet/Filter`。机器是 4C8G 的容器，JDK 21.0.4，原来跑 Spring Boot 2.7.18。我上午刚把 `pom.xml` 里的 parent 改成 3.2.5，心里想的是「不就换个版本号」，结果连编译都没过去。三天后这 47 个才全绿，回头看，真正跟 `javax` 相关的活只有半天。
+47 个测试，报的是同一句 `java.lang.NoClassDefFoundError: javax/servlet/Filter`，一个不落。那是 5 月 12 号周二下午 16:40，CI 上 `mvn test` 跑完，一片红。机器是 4C8G 的容器，JDK 21.0.4，原来跑 Spring Boot 2.7.18。我上午刚把 `pom.xml` 里的 parent 改成 3.2.5，心里想的是「不就换个版本号」，结果连编译都没过去。三天后这 47 个才全绿，回头看，真正跟 `javax` 相关的活只有半天。
 
 ## 第一版是倒着做的
 
@@ -22,7 +22,7 @@ lead: "javax 换 jakarta 只花了半天，剩下两天半全耗在一个靠反�
 
 道理其实很简单：pom 还挂着 2.7 的依赖树，`jakarta.servlet-api` 压根没被拉进来，我把门牌全换成新名字，房子还是旧的。等于没升级，只把代码改成了编译不过的样子。`git checkout .` 回退，重来。
 
-（还有个题外话：那次 `sed` 误伤了 `application.properties` 里写死的 `javax.net.ssl.trustStore`——`javax.net.ssl.*` 是 JDK 自己的系统属性名，不属于 Jakarta EE，压根不该动。后来全局搜了一遍才捞出来。）
+还有个题外话：那次 `sed` 误伤了 `application.properties` 里写死的 `javax.net.ssl.trustStore`，`javax.net.ssl.*` 是 JDK 自己的系统属性名，不属于 Jakarta EE，压根不该动，后来全局搜了一遍才捞出来。
 
 ## 先把依赖升上去
 
@@ -83,7 +83,7 @@ mvn -U org.openrewrite.maven:rewrite-maven-plugin:run \
 > [INFO]   org.openrewrite.java.ChangePackage: javax.persistence -> jakarta.persistence
 > [INFO] Please review and commit the results.
 
-审 diff 花了两个多小时，比替换本身久。recipe 把 `javax.validation`、`javax.persistence`、`javax.servlet` 三套都处理了，还顺手把 `spring.factories` 里几个已失效的自动配置项挪进了 `AutoConfiguration.imports`。有 3 处它没敢动：`javax.annotation.Resource` 来自 `jakarta.annotation-api`，但项目里那个类还打着 `@PostConstruct`，我手动核了一遍确认没漏。真正踩到的是前面说的 `javax.net.ssl.*` 系统属性——recipe 不碰字符串常量，得自己看。
+审 diff 花了两个多小时，比替换本身久。recipe 把 `javax.validation`、`javax.persistence`、`javax.servlet` 三套都处理了，还顺手把 `spring.factories` 里几个已失效的自动配置项挪进了 `AutoConfiguration.imports`。有 3 处它没敢动：`javax.annotation.Resource` 来自 `jakarta.annotation-api`，但项目里那个类还打着 `@PostConstruct`，我手动核了一遍确认没漏。真正踩到的是前面说的 `javax.net.ssl.*` 系统属性，recipe 不碰字符串常量，得自己看。
 
 这里还有个小坑：`rewrite-spring:RELEASE` 会跟着 Maven Central 飘。周三我在本地跑和周四 CI 上跑，拉到的版本不一样，改出来的 `AutoConfiguration.imports` 差了两行。后面打算锁死版本，还没排上。
 
@@ -130,9 +130,9 @@ public class SecurityConfig {
 > expected: "select ... from orders order0_ where order0_.status=? order by order0_.created_at desc"
 >  but was: "select ... from orders o1_0 where o1_0.status=? order by o1_0.created_at desc"
 
-47 个红里有 11 个是这个。改法我纠结过：是更新快照，还是别断言整条 SQL。最后选了后者——快照里那些别名、列顺序本来就是 Hibernate 内部实现，升一次级就要刷一次，纯属给自己找活。写了个 `normalizeAlias()`，先把 `o\d+_\d+` 一类别名统一替换成 `t_` 再比，只保留 `where` 条件和 `order by` 的断言；另外 4 个纯 SQL 文本快照直接删了，改成断言返回的记录数和字段值。
+47 个红里有 11 个是这个。改法我纠结过：是更新快照，还是别断言整条 SQL。选了后者，快照里那些别名、列顺序本来就是 Hibernate 内部实现，升一次级就要刷一次，纯属给自己找活。写了个 `normalizeAlias()`，先把 `o\d+_\d+` 一类别名统一替换成 `t_` 再比，只保留 `where` 条件和 `order by` 的断言；另外 4 个纯 SQL 文本快照直接删了，改成断言返回的记录数和字段值。
 
-顺带一提，`GenerationType.AUTO` 在 Hibernate 6 里也从全局的 `hibernate_sequence` 变成每个实体一个 `xxx_seq`。有 3 个用 `@Sql` 手写 `insert` 的集成测试因此挂了，报的是 `sequence "hibernate_sequence" not found`，跟 SQL 快照那批完全不是一回事，一开始我还以为是同一个原因，白查了半小时。
+`GenerationType.AUTO` 在 Hibernate 6 里也从全局的 `hibernate_sequence` 变成每个实体一个 `xxx_seq`。有 3 个用 `@Sql` 手写 `insert` 的集成测试因此挂了，报的是 `sequence "hibernate_sequence" not found`，跟 SQL 快照那批完全不是一回事，一开始我还以为是同一个原因，白查了半小时。
 
 ## 剩下的两天半，全给了 XStream
 
@@ -149,14 +149,12 @@ Caused by: java.lang.reflect.InaccessibleObjectException:
     ... 28 more
 ```
 
-第一版我想糊过去，照着搜来的答案在启动脚本里加 `--add-opens java.base/java.util=ALL-UNNAMED`，本地确实能起了。结果 CI 的镜像是从另一套 Dockerfile 打的，`JAVA_TOOL_OPTIONS` 没带这一串，部署到预发直接起不来，就是上面那段堆栈。补上环境变量之后又冒出 `com.thoughtworks.xstream.security.ForbiddenClassException`——1.4.10 的反序列化白名单也没配。加了 `--add-opens` 只是把报错往后推了一层，根本没解决。
+第一版我想糊过去，照着搜来的答案在启动脚本里加 `--add-opens java.base/java.util=ALL-UNNAMED`，本地确实能起了。结果 CI 的镜像是从另一套 Dockerfile 打的，`JAVA_TOOL_OPTIONS` 没带这一串，部署到预发直接起不来，就是上面那段堆栈。补上环境变量之后又冒出 `com.thoughtworks.xstream.security.ForbiddenClassException`，1.4.10 的反序列化白名单也没配。加了 `--add-opens` 只是把报错往后推了一层，根本没解决。
 
-最后没再跟它较劲：XStream 升到 1.4.20（这个版本起不靠反射撬 JDK 内部字段了），那段报文解析改成 Jackson 的 `XmlMapper`，白名单问题一并没了。这里就体现出前面留 `java.version=17` 的好处——要是当时顺手把编译目标也抬到 21，合作方那台还停在 17 的联调机就得跟着动，又多一轮扯皮。
+没再跟它较劲：XStream 升到 1.4.20，这个版本起不靠反射撬 JDK 内部字段了，那段报文解析改成 Jackson 的 `XmlMapper`，白名单问题一并没了。这里就体现出前面留 `java.version=17` 的好处——要是当时顺手把编译目标也抬到 21，合作方那台还停在 17 的联调机就得跟着动，又多一轮扯皮。
 
 回头算账：jakarta 包名、Security 配置、Hibernate 快照，加起来不到一天；`--add-opens` 和 XStream 这一摊，两天半。
 
-## 还没解决的
+现在还有几处不干净：测试环境的启动脚本里那条 `--add-opens` 没删，留着是怕还有别的老库没扫到，但每次看都膈应；`rewrite-spring:RELEASE` 打算换成固定版本，还没排上；另外 2 个 Testcontainers 集成测试因为镜像里的 PostgreSQL 12 跟 Hibernate 6 的方言对不上，暂时挂了 `@Disabled`，镜像提到 16 就能放出来。
 
-现在还有几处不干净：测试环境的启动脚本里那条 `--add-opens` 没删，留着是怕还有别的老库没扫到，但每次看都膈应；`rewrite-spring:RELEASE` 打算换成固定版本，还没排上；另外 2 个 Testcontainers 集成测试因为镜像里的 PostgreSQL 12 跟 Hibernate 6 的方言对不上，暂时挂了 `@Disabled`，等下周把镜像提到 16 再放出来。
-
-升级顺序这事我现在会先写进清单：依赖 → 编译 → 启动 → 语法替换 → 测试。`javax` 那一步最显眼，反而最不费时间。如果你也在 2.7 → 3.2 的路上被哪个反射依赖卡过，欢迎到 GitHub 开 issue 说说是哪个库，我想攒一份清单，下次少熬两天。
+升级顺序这事我现在会先写进清单：依赖 → 编译 → 启动 → 语法替换 → 测试。`javax` 那一步最显眼，反而最不费时间。你要是也在 2.7 → 3.2 的路上被哪个反射依赖卡过，来 GitHub 开个 issue 报个库名，我攒一份清单。

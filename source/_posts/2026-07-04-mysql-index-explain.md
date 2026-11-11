@@ -7,7 +7,7 @@ tags:
   - MySQL
   - 索引
   - 性能
-lead: "把 long_query_time 从 10 秒调到 0.3 秒，一下午捞出 8 条慢 SQL，7 条都栽在索引没用对上；最慢那条 4.2 秒改到 18 毫秒，剩下第 8 条我到现在还没动。"
+lead: "慢日志空了大半年，一查是 long_query_time 还挂在 10 秒，调到 0.3 秒一下午就冒出 8 条。"
 ---
 
 ## 7 月 3 号下午，我把 long_query_time 调到了 0.3
@@ -24,13 +24,13 @@ SET GLOBAL log_queries_not_using_indexes = 'OFF';
 SHOW VARIABLES LIKE 'slow_query%';
 ```
 
-`long_query_time` 是 GLOBAL 变量，改完只对新建连接生效，连接池里的老连接还是 10 秒。我第一遍统计完发现条数少得离谱，愣了五分钟才想起来得把应用那边的老连接换掉（我们 HikariCP `maximumPoolSize=20`，最后直接重启了一个 pod 才算数）。这种「改了配置以为没生效」的坑，真是每次都踩。
+`long_query_time` 是 GLOBAL 变量，改完只对新建连接生效，连接池里的老连接还是 10 秒。我第一遍统计完发现条数少得离谱，愣了五分钟才想起来得把应用那边的老连接换掉。我们 HikariCP `maximumPoolSize=20`，后来干脆重启了一个 pod 才算数。这种「改了配置以为没生效」的坑，真是每次都踩。
 
 环境：MySQL 8.0.32，InnoDB，单实例 8C16G，`book` 表 218 万行、`order_item` 表 3400 万行，`innodb_buffer_pool_size=8G`。
 
-一下午捞出来 8 条（用 `pt-query-digest` 按总耗时排序），7 条 explain 一眼就能看出索引没用对。第 8 条我放到最后说，它跟索引其实没关系。
+一下午捞出来 8 条，用 `pt-query-digest` 按总耗时排序，7 条 explain 一眼就能看出索引没用对。第 8 条跟索引其实没关系，留到后面说。
 
-（顺带一提，标题写「七条索引没生效」有点不老实：第 7 条索引是生效的，只是没做覆盖、回表太多，严格讲该叫「没用对」。但凑个整挺顺口，就先这么着吧。）
+标题写「七条索引没生效」有点不老实：第 7 条索引是生效的，只是没做覆盖、回表太多，严格讲该叫「没用对」。但凑个整挺顺口，就先这么着吧。
 
 ## 先把 explain 这几列看明白
 
@@ -95,7 +95,7 @@ CREATE TABLE `order_item` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='订单明细';
 ```
 
-那个 `phone` 是 varchar，我第一眼看建表语句还没觉得有问题，直到看见业务代码里传的是个 long——下面第 1 条就是它。（顺带吐槽，手机号存 varchar 是对的，但当年建表的人没写一句「必须带引号」，接口层又拿 Map 接参数，传到 SQL 里就裸奔了。）
+那个 `phone` 是 varchar，我第一眼看建表语句还没觉得有问题，直到看见业务代码里传的是个 long——下面第 1 条就是它。手机号存 varchar 是对的，只是当年建表的人没写一句「必须带引号」，接口层又拿 Map 接参数，传到 SQL 里就裸奔了。
 
 ## 七条，一条条改
 
@@ -150,7 +150,7 @@ SELECT id, title, price FROM book WHERE tenant_id = 10086 AND status = 1;
 -- 把索引扩成 (tenant_id, status, title, price)，SELECT 的列全在索引里
 ```
 
-第 ④ 条多说两句：MySQL 8.0 是有 index merge 的，理论上 `Using union(...)` 能救，但那天 explain 死活不走，优化器估的 cost 比全表还高（两个条件各自命中率都不低）。我不想跟优化器赌，拆 `UNION ALL` 最稳。第二条里那个 `tenant_id <> 10086` 是为了避免两边都命中同一行时重复返回，因为原本 `OR` 是去重的——这个细节第一版漏了，测试拿一条同时满足两个条件的记录一跑，出来两行，被 QA 拎出来了。
+第 ④ 条多说两句：MySQL 8.0 是有 index merge 的，理论上 `Using union(...)` 能救，但那天 explain 死活不走，优化器估的 cost 比全表还高，两个条件各自命中率都不低。我不想跟优化器赌，拆 `UNION ALL` 最稳。第二条里那个 `tenant_id <> 10086` 是为了避免两边都命中同一行时重复返回，因为原本 `OR` 是去重的——这个细节第一版漏了，测试拿一条同时满足两个条件的记录一跑，出来两行，被 QA 拎出来了。
 
 第 ⑥ 条加索引之前我犹豫过，`book` 表写多读少，多一个二级索引就多维护一棵 B+ 树。但那个列表页 QPS 有 300 多，filesort 每次得把几万行捞出来排，`Sort_merge_passes` 一直涨，加完之后这个状态变量基本不动了，值。
 
@@ -185,8 +185,6 @@ pt-query-digest /var/lib/mysql/slow.log > /tmp/slow-0703.txt
 tail -f /var/lib/mysql/slow.log | grep -A2 '# Time:'       # 实时盯新进来的慢 SQL
 ```
 
-## 还没解决的：第 8 条
-
 第 8 条是后台导出用的分页：
 
 ```sql
@@ -202,4 +200,4 @@ EXPLAIN SELECT id, book_id, qty FROM order_item
 
 explain 是 `type=ref`、`key=idx_tenant_created`，索引老老实实走了，一点毛病没有。慢在 `LIMIT 800000, 20`：MySQL 得按索引扫过 80 万行、回表 80 万次，扔掉前 80 万再取 20 行，pt-query-digest 里平均 3.8 秒。这跟「索引没生效」完全是两回事，所以我没把它算进那七条。
 
-正经解法是改成游标分页，把 `LIMIT offset, size` 换成 `WHERE tenant_id = 10086 AND created_at < 上一页最后一条 ORDER BY created_at DESC LIMIT 20`，配合 `(tenant_id, created_at, id)` 联合索引，翻到第八十万行也只是取 20 行的事。麻烦在前端导出组件是通用的，页码写死在 URL 里，改游标要动三四个页面加一个 SDK，这周排期满了。我先给那个接口加了个 `offset > 100000` 直接拒掉的兜底，提示用户改用按时间范围导出——算是拿胶布糊上了。等下个月把导出服务拆出去，再回来收拾它。
+正经解法是改成游标分页，把 `LIMIT offset, size` 换成 `WHERE tenant_id = 10086 AND created_at < 上一页最后一条 ORDER BY created_at DESC LIMIT 20`，配合 `(tenant_id, created_at, id)` 联合索引，翻到第八十万行也只是取 20 行的事。麻烦在前端导出组件是通用的，页码写死在 URL 里，改游标要动三四个页面加一个 SDK，这周排期满了；导出服务下个月拆出去，那时再动游标分页。我先给那个接口加了个 `offset > 100000` 直接拒掉的兜底，提示用户改用按时间范围导出——算是拿胶布糊上了。
