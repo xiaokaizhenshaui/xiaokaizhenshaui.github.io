@@ -58,12 +58,12 @@ flags:
   settlement_mode:
     value: "legacy_monolith"
     due: 2027-03-31
-    owner: youngCerulean
+    owner: CAIUS.
     note: "billing 对账跑满两个账期之后，再定要不要拆 settlement 服务"
   id_format:
     value: "bigint_sequence"
     due: 2026-09-30
-    owner: youngCerulean
+    owner: CAIUS.
     note: "对外订单号格式，一旦有第三方对接就锁死，别再动"
 ```
 

@@ -5,7 +5,7 @@
   "hexo": {
     "version": "7.3.0"
   },
-  "description": "Cerulean Deer - cyber terminal x otaku tech blog",
+  "description": "CAIUS. - cyber terminal x otaku tech blog",
   "scripts": {
     "build": "hexo generate",
     "clean": "hexo clean",

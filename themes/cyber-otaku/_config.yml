@@ -16,7 +16,7 @@ mascot: /images/mascot.webp
 og_image: /images/og-cover.jpg
 
 hero:
-  prompt: 'youngCerulean@cerulean-deer:~$'
+  prompt: 'CAIUS.@caius:~$'
   typed:
     - 'cat ./README.md'
     - 'git log --oneline --since="2021-01"'

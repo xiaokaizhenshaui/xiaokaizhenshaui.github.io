@@ -1,12 +1,12 @@
 # ============================================================
-# Cerulean Deer / Hexo site config
+# CAIUS. / Hexo site config
 # 修正了旧站遗留的 canonical: http://example.com 问题
 # ============================================================
-title: Cerulean Deer
+title: CAIUS.
 subtitle: '~/devlog'
 description: 'Java、全栈、中间件、AI 工具与大模型的踩坑记录。一个后端仔的碎碎念。'
 keywords: 'Java,Spring Boot,全栈,TypeScript,GraphQL,Kafka,Redis,大模型,AI 工具,技术博客'
-author: youngCerulean
+author: CAIUS.
 language: zh-CN
 timezone: Asia/Shanghai
 

@@ -1,6 +1,6 @@
 ![夜之城横幅](source/images/hero-city.webp)
 
-# 🌃 Cerulean Deer · 赛博朋克技术博客
+# 🌃 CAIUS. · 赛博朋克技术博客
 
 > *一个会自己「盖起来」的 Hexo 博客 —— 一群模拟的 AI agent 光标把首页逐块拆掉，再一块块拼回来。*
 

@@ -1,4 +1,4 @@
-/* Cerulean Deer / cyber-otaku
+/* CAIUS. / cyber-otaku
    纯原生 JS，无第三方依赖。所有 DOM 操作都做存在性判断，缺元素不报错。 */
 (function () {
   'use strict';

@@ -1,5 +1,5 @@
 /* ============================================================
-   Cerulean Deer / Night City FX
+   CAIUS. / Night City FX
    纯原生 JS。依赖顺序：agent-build.min.js → effects.js → main.js
    所有开关存 localStorage，任何一步拿不到 DOM 都静默跳过。
    ============================================================ */
