@@ -612,3 +612,16 @@ kbd {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
   .caret, .brand-cursor { animation: none; opacity: 1; }
 }
+
+/* ---------- 软考笔记 / mermaid 图面板（始终深色，亮暗模式都保证对比度） ---------- */
+.mermaid {
+  background: #0b0e1a;
+  border: 1px solid var(--c-border, #23304a);
+  border-radius: 10px;
+  padding: var(--sp-4, 16px);
+  margin: var(--sp-4, 16px) 0;
+  text-align: center;
+  overflow-x: auto;
+}
+.mermaid svg { max-width: 100%; height: auto; }
+
