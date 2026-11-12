@@ -64,10 +64,15 @@ jobs:
           ROTATE_MARGIN=1200    # 距最长运行上限不足 20 分钟就主动轮转
 
           req() {
-            local method="$1" path="$2" body="${3:-}"
+            local method="$1" path="$2" body="${3:-}" idem="${4:-}"
             local -a args=(-sS --max-time 30 -o /tmp/ib.json -w '%{http_code}'
               -X "$method" "$API$path"
               -H "X-API-Key: $API_KEY" -H 'Accept: application/json')
+            # 官方 lifecycle 端点（suspend/resume/start/stop）强制要求 Idempotency-Key，
+            # 缺失会返回 400 bad_request；lease/wake 端点不需要，也不要传。
+            if [ -n "$idem" ]; then
+              args+=(-H "Idempotency-Key: $idem")
+            fi
             if [ -n "$body" ]; then
               args+=(-H 'Content-Type: application/json' -d "$body")
             fi
@@ -102,10 +107,10 @@ jobs:
 
           # 非 running：先 resume，失败再 start（stopped 状态）
           if [ "$state" != "running" ]; then
-            req POST "/v1/machines/$MACHINE/resume" '{}'
+            req POST "/v1/machines/$MACHINE/resume" '{}' "ka-${GITHUB_RUN_ID}-${RANDOM}-resume"
             echo "resume -> $STATUS"
             if [ "$STATUS" -ge 400 ]; then
-              req POST "/v1/machines/$MACHINE/start" '{}'
+              req POST "/v1/machines/$MACHINE/start" '{}' "ka-${GITHUB_RUN_ID}-${RANDOM}-start"
               echo "start -> $STATUS"
             fi
             wait_running || { echo "等待 running 超时，下一轮再试"; exit 0; }
@@ -127,10 +132,10 @@ jobs:
 
           if [ "$do_rotate" = "1" ]; then
             echo "主动轮转：suspend -> resume"
-            req POST "/v1/machines/$MACHINE/suspend" '{}'
+            req POST "/v1/machines/$MACHINE/suspend" '{}' "ka-${GITHUB_RUN_ID}-${RANDOM}-suspend"
             echo "suspend -> $STATUS"
             sleep 8
-            req POST "/v1/machines/$MACHINE/resume" '{}'
+            req POST "/v1/machines/$MACHINE/resume" '{}' "ka-${GITHUB_RUN_ID}-${RANDOM}-rotate-resume"
             echo "resume -> $STATUS"
             wait_running || { echo "轮转后未恢复 running，下一轮再试"; exit 0; }
           fi
