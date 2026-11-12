@@ -18,8 +18,16 @@ name: InstaBox 保活
 
 on:
   schedule:
-    # 每 10 分钟一次，避开整点高负载（GitHub Actions cron 按 UTC）
-    - cron: '7,17,27,37,47,57 * * * *'
+    # 每 10 分钟一次，避开整点高负载（GitHub Actions cron 按 UTC）。
+    # 2026-11-12：改动分钟值以强制 GitHub 重新注册 schedule —— 新建工作流的
+    # schedule 可能在首次推送后长时间未注册，修改 schedule 块本身可触发重新登记。
+    # 注意：GitHub 官方声明 schedule 为 best-effort，高负载时会延迟或丢弃，
+    # 因此另有 push / repository_dispatch / 本机 launchd 作为额外发起方。
+    - cron: '3,13,23,33,43,53 * * * *'
+  push:
+    branches: [main]
+  repository_dispatch:
+    types: [instabox-keepalive]
   workflow_dispatch:
     inputs:
       action:
@@ -44,8 +52,10 @@ jobs:
           API_KEY: ${{ secrets.INSTABOX_API_KEY }}
           MACHINE: ${{ vars.INSTABOX_MACHINE }}
           DISPATCH_ACTION: ${{ inputs.action }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           set -euo pipefail
+          echo "触发事件: ${EVENT_NAME:-unknown}"
           : "${API_KEY:?仓库 Secret INSTABOX_API_KEY 未配置}"
           MACHINE="${MACHINE:-m_agq43wm6jczdmayiy7oduw2dhe}"
           API="https://api.instabox.sh"
