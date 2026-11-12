@@ -1,0 +1,133 @@
+# InstaBox 免费机保活（外部定时续租）
+#
+# 前置：
+#   1) 在 GitHub 仓库 Settings → Secrets and variables → Actions → Secrets
+#      新建 INSTABOX_API_KEY，值为 instabox keys create 生成的 ibk_...（只读+写权限，勿给 delete）
+#   2) 可选：在 Variables 里新建 INSTABOX_MACHINE，值为机器 ID；不填则用下方默认值
+#   3) 推送到默认分支 main 后生效；schedule 只在默认分支运行
+#
+# 原理：续租必须来自机器外部，机器一暂停，内部的 cron/systemd 会一起冻结。
+#   - GET  /v1/machines/{id}                          看状态、冷却期、剩余运行时长
+#   - POST /v1/machines/{id}/resume | /start         唤醒（手动暂停/停机）
+#   - POST /v1/machines/{id}/suspend + /resume       主动轮转，重置连续运行计时与冷却连击
+#   - PUT  /v1/machines/{id}/activity-leases/{lease} 续活动租约，ttlSeconds 取值 30~3600
+# 免费档 30 分钟空闲暂停固定、最长运行时长由服务端动态管理，无法做到 7×24 不中断。
+# 本工作流的目标：避免空闲暂停 + 停机后尽快恢复 + 撞上限前主动轮转以规避长时间冷却。
+
+name: InstaBox 保活
+
+on:
+  schedule:
+    # 每 10 分钟一次，避开整点高负载（GitHub Actions cron 按 UTC）
+    - cron: '7,17,27,37,47,57 * * * *'
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'renew（只续租）或 rotate（强制主动轮转）'
+        required: false
+        default: 'renew'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: instabox-keepalive
+  cancel-in-progress: false
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: 续租 / 唤醒 / 轮转
+        env:
+          API_KEY: ${{ secrets.INSTABOX_API_KEY }}
+          MACHINE: ${{ vars.INSTABOX_MACHINE }}
+          DISPATCH_ACTION: ${{ inputs.action }}
+        run: |
+          set -euo pipefail
+          : "${API_KEY:?仓库 Secret INSTABOX_API_KEY 未配置}"
+          MACHINE="${MACHINE:-m_agq43wm6jczdmayiy7oduw2dhe}"
+          API="https://api.instabox.sh"
+          LEASE="keepalive"
+          TTL=3600              # 官方上限；10 分钟续一次，可容忍连续多次调度丢失
+          ROTATE_MARGIN=1200    # 距最长运行上限不足 20 分钟就主动轮转
+
+          req() {
+            local method="$1" path="$2" body="${3:-}"
+            local -a args=(-sS --max-time 30 -o /tmp/ib.json -w '%{http_code}'
+              -X "$method" "$API$path"
+              -H "X-API-Key: $API_KEY" -H 'Accept: application/json')
+            if [ -n "$body" ]; then
+              args+=(-H 'Content-Type: application/json' -d "$body")
+            fi
+            STATUS=$(curl "${args[@]}")
+            BODY=$(cat /tmp/ib.json 2>/dev/null || echo '{}')
+          }
+
+          jget() { echo "$BODY" | jq -r "$1 // empty"; }
+
+          wait_running() {
+            local i
+            for i in $(seq 1 9); do
+              req GET "/v1/machines/$MACHINE"
+              [ "$(jget '.state')" = "running" ] && return 0
+              sleep 5
+            done
+            return 1
+          }
+
+          req GET "/v1/machines/$MACHINE"
+          [ "$STATUS" = "200" ] || { echo "读取机器状态失败: $STATUS $BODY"; exit 1; }
+          state=$(jget '.state')
+          cooldown=$(jget '.cooldownUntil')
+          maxrun=$(jget '.maxRunMinutes')
+          started=$(jget '.runStartedAt')
+          echo "state=$state maxRunMinutes=$maxrun runStartedAt=$started cooldownUntil=$cooldown"
+
+          # 冷却期内所有唤醒路径都返回 409 machine_cooldown，只能等
+          if [ -n "$cooldown" ] && [ "$(date -d "$cooldown" +%s)" -gt "$(date -u +%s)" ]; then
+            echo "冷却中至 $cooldown，本轮跳过"; exit 0
+          fi
+
+          # 非 running：先 resume，失败再 start（stopped 状态）
+          if [ "$state" != "running" ]; then
+            req POST "/v1/machines/$MACHINE/resume" '{}'
+            echo "resume -> $STATUS"
+            if [ "$STATUS" -ge 400 ]; then
+              req POST "/v1/machines/$MACHINE/start" '{}'
+              echo "start -> $STATUS"
+            fi
+            wait_running || { echo "等待 running 超时，下一轮再试"; exit 0; }
+            started=""
+          fi
+
+          # 撞上限前主动 suspend→resume：连续运行计时清零，且不会产生冷却期
+          # 官方：主动暂停不计入 max-run 冷却连击；paused 保留内存与进程
+          if [ "$DISPATCH_ACTION" = "rotate" ]; then
+            do_rotate=1
+          elif [ -n "$started" ] && [ -n "$maxrun" ] && [ "$maxrun" -gt 0 ]; then
+            limit_ts=$(( $(date -d "$started" +%s) + maxrun * 60 ))
+            remaining=$(( limit_ts - $(date -u +%s) ))
+            echo "距最长运行上限还剩 ${remaining}s"
+            [ "$remaining" -lt "$ROTATE_MARGIN" ] && do_rotate=1 || do_rotate=0
+          else
+            do_rotate=0
+          fi
+
+          if [ "$do_rotate" = "1" ]; then
+            echo "主动轮转：suspend -> resume"
+            req POST "/v1/machines/$MACHINE/suspend" '{}'
+            echo "suspend -> $STATUS"
+            sleep 8
+            req POST "/v1/machines/$MACHINE/resume" '{}'
+            echo "resume -> $STATUS"
+            wait_running || { echo "轮转后未恢复 running，下一轮再试"; exit 0; }
+          fi
+
+          req PUT "/v1/machines/$MACHINE/activity-leases/$LEASE" "{\"ttlSeconds\":$TTL}"
+          echo "续租 HTTP $STATUS expiresAt=$(jget '.expiresAt')"
+          case "$STATUS" in
+            200|201) echo "保活完成" ;;
+            *) echo "续租失败: $BODY"; exit 1 ;;
+          esac
